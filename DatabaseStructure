@@ -1,0 +1,175 @@
+
+### 1. Users (用戶管理)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| userId      | TEXT      | 用戶ID (主鍵)            |
+| email       | TEXT      | 電子郵件                 |
+| name        | TEXT      | 用戶姓名                 |
+| role        | TEXT      | 角色(admin/manager/volunteer) |
+| dateCreated | DATETIME  | 建立日期                 |
+| lastLogin   | DATETIME  | 最後登入時間              |
+| museum      | TEXT      | 所屬博物館                |
+| status      | TEXT      | 帳號狀態(active/inactive) |
+```
+
+### 2. Museums (博物館管理)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| museumId    | TEXT      | 博物館ID (主鍵)          |
+| name        | TEXT      | 博物館名稱                |
+| exhibitionHall | TEXT  | 展廳                    |
+| section     | TEXT      | 廳別                    |
+| description | TEXT      | 描述   
+| floorPlanUrl| TEXT      | 平面圖URL               |
+| address     | TEXT      | 地址                    |
+| contact     | TEXT      | 聯絡資訊                 |                                                              
+| status      | TEXT      | 狀態                    |
+| notes       | TEXT      | 備註                    |
+                   |
+```
+
+### 3. FormTemplates (表單模板)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| templateId   | TEXT      | 模板ID (主鍵)               |
+| name         | TEXT      | 模板名稱                    |
+| type         | TEXT      | 表單類型(visitor_info/behavior_record) |
+| version      | TEXT      | 版本號 (例如: v1.0, v2.0)    |
+| isActive     | BOOLEAN   | 是否為當前使用版本            |
+| createdAt    | DATETIME  | 創建日期                    |
+| updatedAt    | DATETIME  | 最後更新日期                 |
+| createdBy    | TEXT      | 創建者ID                   |
+| description  | TEXT      | 模板描述                    |
+| notes        | TEXT      | 備註 (包含版本變更說明)        |
+```
+
+### 4. FormFields (表單欄位)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| fieldId      | TEXT      | 欄位ID (主鍵)               |
+| templateId   | TEXT      | 所屬模板ID                  |
+| name         | TEXT      | 欄位名稱                    |
+| label        | TEXT      | 顯示標籤                    |
+| type         | TEXT      | 欄位類型(text/number/select/date等) |
+| required     | BOOLEAN   | 是否必填                    |
+| options      | JSON      | 選項設定 (適用於下拉選單等)      |
+| placeholder  | TEXT      | 提示文字                    |
+| sortOrder    | NUMBER    | 排序順序                    |
+| isActive     | BOOLEAN   | 是否啟用                    |
+| addedInVersion | TEXT    | 添加於哪個版本               |
+```
+
+### 5. FormOptions (表單選項)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| optionId     | TEXT      | 選項ID (主鍵)               |
+| fieldId      | TEXT      | 所屬欄位ID                  |
+| value        | TEXT      | 選項值                      |
+| label        | TEXT      | 顯示標籤                    |
+| sortOrder    | NUMBER    | 排序順序                    |
+| isActive     | BOOLEAN   | 是否啟用                    |
+| addedInVersion | TEXT    | 添加於哪個版本               |
+```
+
+### 6. VisitorRecords (觀眾行為紀錄)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| recordId     | TEXT      | 紀錄ID (主鍵)               |
+| museumId     | TEXT      | 博物館ID                   |
+| userId       | TEXT      | 記錄者ID                   |
+| formVersion  | TEXT      | 使用的表單版本               |
+| startTime    | DATETIME  | 開始時間                    |
+| endTime      | DATETIME  | 結束時間                    |
+| createdAt    | DATETIME  | 創建時間                    |
+| notes        | TEXT      | 備註                       |
+```
+
+### 7. VisitorInteractions (觀眾互動記錄)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| interactionId| TEXT      | 互動ID (主鍵)               |
+| recordId     | TEXT      | 所屬紀錄ID                  |
+| pointId      | TEXT      | 點位ID                     |
+| arriveTime   | DATETIME  | 到達時間                    |
+| leaveTime    | DATETIME  | 離開時間                    |
+| staySeconds  | NUMBER    | 停留秒數                    |
+| interactionCount | NUMBER | 互動次數                   |
+| interactionType  | TEXT   | 互動行為                   |
+| notes        | TEXT      | 備註                       |
+```
+
+### 8. VisitorInfo (觀眾基本資料)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| visitorId    | TEXT      | 訪客ID (主鍵)               |
+| recordId     | TEXT      | 關聯的紀錄ID                |
+| formVersion  | TEXT      | 使用的表單版本               |
+| gender       | TEXT      | 性別                       |
+| ageGroup     | TEXT      | 年齡層                     |
+| education    | TEXT      | 教育程度                    |
+| residence    | TEXT      | 居住地                     |
+| visitPurpose | TEXT      | 參觀目的                    |
+| visitFrequency | TEXT    | 參觀頻率                    |
+| consent      | BOOLEAN   | 同意授權                    |
+| extraData    | JSON      | 額外資料 (存儲非標準欄位的資料)   |
+```
+
+### 9. Points (展場點位)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| pointId     | TEXT      | 點位ID (主鍵)            |
+| museumId    | TEXT      | 博物館ID                |
+| name        | TEXT      | 點位名稱                 |
+| description | TEXT      | 描述                    |
+| xCoord      | NUMBER    | X座標                   |
+| yCoord      | NUMBER    | Y座標                   |
+| category    | TEXT      | 類別                    |
+| status      | TEXT      | 狀態                    |
+```
+
+### 10. SystemConfig (系統配置)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| configKey   | TEXT      | 配置鍵 (主鍵)            |
+| configValue | TEXT      | 配置值                  |
+| description | TEXT      | 描述                    |
+| lastUpdated | DATETIME  | 最後更新時間              |
+| updatedBy   | TEXT      | 更新者                  |
+```
+
+### 11. Reports (報表配置)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| reportId    | TEXT      | 報表ID (主鍵)            |
+| name        | TEXT      | 報表名稱                 |
+| type        | TEXT      | 報表類型                 |
+| config      | JSON      | 報表配置                 |
+| schedule    | TEXT      | 生成排程                 |
+| lastGenerated| DATETIME  | 最後生成時間              |
+| status      | TEXT      | 狀態                    |
+```
+
+### 12. FormVersionMigrations (表單版本遷移記錄)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| migrationId  | TEXT      | 遷移ID (主鍵)               |
+| fromVersion  | TEXT      | 來源版本                    |
+| toVersion    | TEXT      | 目標版本                    |
+| migratedAt   | DATETIME  | 遷移時間                    |
+| migratedBy   | TEXT      | 執行遷移的用戶ID             |
+| affectedRecords | NUMBER  | 受影響的記錄數               |
+| status       | TEXT      | 狀態 (成功/失敗)             |
+| notes        | TEXT      | 備註                       |
+```

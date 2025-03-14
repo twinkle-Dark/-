@@ -1,0 +1,446 @@
+### 1. 系統概述與目標
+
+"我需要一個網頁版觀眾調查系統，幫助博物館追蹤觀眾的行為模式，並儲存資料產出報表。傳統上作業方式是20-70歲的志工，用拿著博物館的平面圖，在入口選定觀眾後，更隨並觀察對方，並在平面圖上做紀錄，誠如你所見這個方式，效率低下，並且後續電子化亦需耗費大量人力，所以希望架設一平台，這個系統應該簡單易用，能夠快速記錄，並輔助改善繁瑣的流程，例如抄計時間；繪製路線圖等，且能自動分析紀錄資料生成報表。
+平台利用html 開發，簡化數據收集流程，視覺化分析觀眾行為，提升博物館管理效率。功能涵蓋授權登入、展館選擇、計時、數據輸入、數據儲存、路線圖生成、同意聲明等，
+以下是使用流程
+登入(驗證)→
+1.管理員→進入後台畫面(可跳轉至前台)
+2.志工→下拉選擇館廳→開始計時→從平面圖上選擇點位輸入資料→輸入停留時間、停留次數、互動時間、互動次數等、當下時間(重複)→結束記錄→輸入觀眾基本資料→顯示觀眾授權書→取得調查對象同意→產出路線圖→儲存資料
+```
+
+graph TD
+    A[用戶登入] --> B{角色驗證}
+    B -->|系統管理員| C[系統管理]
+    B -->|博物館管理員| D[管理控制台]
+    B -->|紀錄志工| E[觀眾追蹤]
+    E --> F[選擇館廳]
+    F --> G[開始追蹤]
+    G --> H[記錄互動]
+    H --> I[結束追蹤]
+    I --> J[填寫基本資料]
+    J --> K[取得同意]
+    K --> L[生成路線圖]
+    L --> M[儲存資料]
+
+```
+### 2.技術架構展望
+- 前端：HTML5、CSS3、JavaScript
+- 後端:
+- 資料庫: 小型資料庫
+- 安全協議:SSL、TLS
+- 類型:動態網頁
+### 3. 用戶與角色定義
+
+"系統需要支援三種用戶角色：
+- 系統管理員：增減其他博物館、維護系統、系統開發權限、管理員的所有權限
+- 管理員：可以添加/刪除用戶，設定權限，查看、匯入及更改所有數據，修改系統設置，查看數據儀表板、添加/修改表單，平面圖標點更換及調整(當館藏更動時)，查看記錄頻率
+- 紀錄志工：需登入驗證，只能使用記錄功能
+			功能
+			系統管理員
+			博物館管理員
+			紀錄志工
+			系統設置
+			完全
+			部分
+			無
+			用戶管理
+			完全
+			有限
+			無
+			館廳管理
+			完全
+			有限
+			無
+			數據查看
+			完全
+			完全
+			僅限自己
+			數據記錄
+			完全
+			完全
+			是
+			報表生成
+			完全
+			完全
+			無
+			系統開發
+			完全
+			無
+			無
+### 4. 詳細功能需求
+
+界面應該直觀且響應式，能在電腦和平板上正常顯示。主要頁面包括：
+### < 管理界面>
+
+當管理員登入時，進入管理界面，顯示
+1. 儀表板：顯示記錄狀況
+2. 博物館管理:檢視、新增及編輯博物館館廳
+3. 用戶管理 :檢視、新增及編輯用戶及權限
+4. 表單管理:展示目前紀錄頁面，能修改紀錄表單內容
+5. 資料管理：檢索、輸入及調用資料
+6. 報表管理：用於生成和查看各種報表
+7. 系統設置
+8. ai機器人基於date base回答問題
+9. 跳轉至觀眾紀錄頁面
+### <觀眾紀錄頁面>(響應式，能在電腦和平板上正常顯示)
+- 提供登入功能（使用 Google 帳戶驗證）
+- 選擇介面下拉選擇博物館及展廳
+- 顯示館廳平面圖 上頭標示紅點為停留點位，使用者點擊後，彈出記錄表單，單筆記錄結束後，回到平面圖繼續記錄，右下角紅色按鈕顯示關閉介面，點擊彈出視窗詢問是否結束紀錄
+- 讓使用者點擊選擇停留點並輸入數據（使用 HTML 表單）
+	使用者點擊地圖上的點，彈出輸入框填寫數據，包含：、停留秒數(AUTO)、停留次數、互動次數、互動行為、當下時間（自動填入）、備註。方便使用者操作
+
+				欄位名稱
+				資料類型
+				說明
+				recordId
+				TEXT
+				紀錄ID (主鍵)
+				museumId
+				TEXT
+				博物館ID
+				userId
+				TEXT
+				記錄者ID
+				pointId
+				TEXT
+				點位ID
+				arriveTime
+				DATETIME
+				到達時間
+				leaveTime
+				DATETIME
+				離開時間
+				staySeconds
+				NUMBER
+				停留秒數
+				interactionCount
+				NUMBER
+				互動次數
+				interactionType
+				TEXT
+				互動行為
+				notes
+				TEXT
+				備註
+- 顯示即時計時器 
+	- 在輸入第一筆資料後開始計時，記錄總停留時間
+	- 在每個點位輸入資料時同步計時，在每個點位送出資料時自動填上停留時間，在葉面上附註"同步計時中請待遊客離開點位後，才按下送出"
+		
+- 結束紀錄時顯示觀眾授權書取得調查對象同意
+	紀錄完成時彈出同意條款及，讓調查對象簽名或點擊同意，同意條款範例：告知數據收集目的、使用範圍、保護措施等。
+- 及時產生路線圖動畫 供觀眾互動
+- 輸入觀眾基本資料
+	基本資料蒐集，填寫基本資料，性別、年齡、教育程度、居住地
+- 儲存資料
+	產生編號id例:AA202508301(館展廳YYYYMMDD排序)存入 Google 試算表。自動產生每月報表
+1. 資料追蹤：
+	- 依固定格式填入試算表，並於每月自動產生報表
+	- 資料庫供回顧調用
+2. 數據視覺化與bi儀表板：
+使用  Google Looker Studio產生BI儀錶板 ，展示統計圖表可自由調整篩選和顯示
+	- 觀眾趨勢圖表
+	- 熱門路線分析
+	- 可導出為Excel或PDF的庫存報表
+
+
+### 6. 資料庫模式設計
+
+#### 1. Users (用戶管理)
+```
+| 欄位名稱      | 資料類型    | 說明                    |
+
+|-------------|------------|------------------------|
+
+| userId      | TEXT      | 用戶ID (主鍵)            |
+
+| email       | TEXT      | 電子郵件                 |
+
+| name        | TEXT      | 用戶姓名                 |
+
+| role        | TEXT      | 角色(admin/manager/volunteer) |
+
+| dateCreated | DATETIME  | 建立日期                 |
+
+| lastLogin   | DATETIME  | 最後登入時間              |
+
+| museum      | TEXT      | 所屬博物館                |
+
+| status      | TEXT      | 帳號狀態(active/inactive) |
+
+```
+#### 2. Museums (博物館管理)
+```
+| 欄位名稱      | 資料類型    | 說明                    |
+
+|-------------|------------|------------------------|
+
+| museumId    | TEXT      | 博物館ID (主鍵)          |
+
+| name        | TEXT      | 博物館名稱                |                 |
+
+| exhibitionHall | TEXT  | 展廳                    |
+
+| section     | TEXT      | 廳別                    |
+
+| description | TEXT      | 描述
+
+| floorPlanUrl| TEXT      | 平面圖URL               |
+
+| address     | TEXT      | 地址                    |
+
+| contact     | TEXT      | 聯絡資訊                 |
+
+| status      | TEXT      | 狀態                    |
+
+| notes       | TEXT      | 備註                    |
+
+                   |
+
+```
+#### 3. FormTemplates (表單模板)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| templateId   | TEXT      | 模板ID (主鍵)               |
+
+| name         | TEXT      | 模板名稱                    |
+
+| type         | TEXT      | 表單類型(visitor_info/behavior_record) |
+
+| version      | TEXT      | 版本號 (例如: v1.0, v2.0)    |
+
+| isActive     | BOOLEAN   | 是否為當前使用版本            |
+
+| createdAt    | DATETIME  | 創建日期                    |
+
+| updatedAt    | DATETIME  | 最後更新日期                 |
+
+| createdBy    | TEXT      | 創建者ID                   |
+
+| description  | TEXT      | 模板描述                    |
+
+| notes        | TEXT      | 備註 (包含版本變更說明)        |
+
+```
+#### 4. FormFields (表單欄位)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| fieldId      | TEXT      | 欄位ID (主鍵)               |
+
+| templateId   | TEXT      | 所屬模板ID                  |
+
+| name         | TEXT      | 欄位名稱                    |
+
+| label        | TEXT      | 顯示標籤                    |
+
+| type         | TEXT      | 欄位類型(text/number/select/date等) |
+
+| required     | BOOLEAN   | 是否必填                    |
+
+| options      | JSON      | 選項設定 (適用於下拉選單等)      |
+
+| placeholder  | TEXT      | 提示文字                    |
+
+| sortOrder    | NUMBER    | 排序順序                    |
+
+| isActive     | BOOLEAN   | 是否啟用                    |
+
+| addedInVersion | TEXT    | 添加於哪個版本               |
+
+```
+#### 5. FormOptions (表單選項)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| optionId     | TEXT      | 選項ID (主鍵)               |
+
+| fieldId      | TEXT      | 所屬欄位ID                  |
+
+| value        | TEXT      | 選項值                      |
+
+| label        | TEXT      | 顯示標籤                    |
+
+| sortOrder    | NUMBER    | 排序順序                    |
+
+| isActive     | BOOLEAN   | 是否啟用                    |
+
+| addedInVersion | TEXT    | 添加於哪個版本               |
+
+```
+#### 6. VisitorRecords (觀眾行為紀錄)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| recordId     | TEXT      | 紀錄ID (主鍵)               |
+
+| museumId     | TEXT      | 博物館ID                   |
+
+| userId       | TEXT      | 記錄者ID                   |
+
+| formVersion  | TEXT      | 使用的表單版本               |
+
+| startTime    | DATETIME  | 開始時間                    |
+
+| endTime      | DATETIME  | 結束時間                    |
+
+| createdAt    | DATETIME  | 創建時間                    |
+
+| notes        | TEXT      | 備註                       |
+
+```
+#### 7. VisitorInteractions (觀眾互動記錄)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| interactionId| TEXT      | 互動ID (主鍵)               |
+
+| recordId     | TEXT      | 所屬紀錄ID                  |
+
+| pointId      | TEXT      | 點位ID                     |
+
+| arriveTime   | DATETIME  | 到達時間                    |
+
+| leaveTime    | DATETIME  | 離開時間                    |
+
+| staySeconds  | NUMBER    | 停留秒數                    |
+
+| interactionCount | NUMBER | 互動次數                   |
+
+| interactionType  | TEXT   | 互動行為                   |
+
+| notes        | TEXT      | 備註                       |
+
+```
+#### 8. VisitorInfo (觀眾基本資料)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| visitorId    | TEXT      | 訪客ID (主鍵)               |
+
+| recordId     | TEXT      | 關聯的紀錄ID                |
+
+| formVersion  | TEXT      | 使用的表單版本               |
+
+| gender       | TEXT      | 性別                       |
+
+| ageGroup     | TEXT      | 年齡層                     |
+
+| education    | TEXT      | 教育程度                    |
+
+| residence    | TEXT      | 居住地                     |
+
+| visitPurpose | TEXT      | 參觀目的                    |
+
+| visitFrequency | TEXT    | 參觀頻率                    |
+
+| consent      | BOOLEAN   | 同意授權                    |
+
+| extraData    | JSON      | 額外資料 (存儲非標準欄位的資料)   |
+
+```
+#### 9. Points (展場點位)
+```
+| 欄位名稱      | 資料類型    | 說明                    |
+
+|-------------|------------|------------------------|
+
+| pointId     | TEXT      | 點位ID (主鍵)            |
+
+| museumId    | TEXT      | 博物館ID                |
+
+| name        | TEXT      | 點位名稱                 |
+
+| description | TEXT      | 描述                    |
+
+| xCoord      | NUMBER    | X座標                   |
+
+| yCoord      | NUMBER    | Y座標                   |
+
+| category    | TEXT      | 類別                    |
+
+| status      | TEXT      | 狀態                    |
+
+```
+#### 10. SystemConfig (系統配置)
+```
+| 欄位名稱      | 資料類型    | 說明                    |
+
+|-------------|------------|------------------------|
+
+| configKey   | TEXT      | 配置鍵 (主鍵)            |
+
+| configValue | TEXT      | 配置值                  |
+
+| description | TEXT      | 描述                    |
+
+| lastUpdated | DATETIME  | 最後更新時間              |
+
+| updatedBy   | TEXT      | 更新者                  |
+
+```
+#### 11. Reports (報表配置)
+```
+| 欄位名稱      | 資料類型    | 說明                    |
+
+|-------------|------------|------------------------|
+
+| reportId    | TEXT      | 報表ID (主鍵)            |
+
+| name        | TEXT      | 報表名稱                 |
+
+| type        | TEXT      | 報表類型                 |
+
+| config      | JSON      | 報表配置                 |
+
+| schedule    | TEXT      | 生成排程                 |
+
+| lastGenerated| DATETIME  | 最後生成時間              |
+
+| status      | TEXT      | 狀態                    |
+
+```
+#### 12. FormVersionMigrations (表單版本遷移記錄)
+```
+| 欄位名稱       | 資料類型    | 說明                       |
+
+|--------------|------------|---------------------------|
+
+| migrationId  | TEXT      | 遷移ID (主鍵)               |
+
+| fromVersion  | TEXT      | 來源版本                    |
+
+| toVersion    | TEXT      | 目標版本                    |
+
+| migratedAt   | DATETIME  | 遷移時間                    |
+
+| migratedBy   | TEXT      | 執行遷移的用戶ID             |
+
+| affectedRecords | NUMBER  | 受影響的記錄數               |
+
+| status       | TEXT      | 狀態 (成功/失敗)             |
+
+| notes        | TEXT      | 備註                       |
+
+```
+### 7. API 端點規劃
+"我偏好使用網頁技術實現此系統，使其可通過瀏覽器訪問。如果可能，希望採用容易維護和擴展的技術。資料存儲方面，需要一個可靠的數據庫確保數據安全。"
+### 8. 成功標準
+我會清楚定義什麼樣的結果才算成功：
+"如果這個系統能夠實現以下目標，就算成功：
+- 為管理決策提供清晰的數據支持
+- 使用戶能在5分鐘內學會基本操作
+- 確保庫存數據實時更新
+- 系統運行穩定，加載頁面不超過3秒"
