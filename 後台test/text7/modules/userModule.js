@@ -1,0 +1,1004 @@
+    /**
+     * 用戶管理模組 - 負責管理系統用戶
+     * 包含用戶創建、編輯、刪除等功能
+     */
+    // 定義用戶管理模組
+    const UserModule = {
+        // 當前篩選條件
+        filters: {
+            role: '',
+            status: '',
+            keyword: ''
+        },
+        
+        // 初始化
+        init: function() {
+            console.log('初始化用戶管理模組');
+            this.setupEventListeners();
+            this.loadData();
+            this.initForm();
+        },
+        
+        // 取得目前登入的用戶
+        getCurrentUser: function() {
+            if (window.App && window.App.loginModule) {
+                return window.App.loginModule.getCurrentUser();
+            }
+            // 若無法取得登入模組，返回空物件
+            return {};
+        },
+        
+        // 設置事件監聽
+        setupEventListeners: function() {
+            // 新增按鈕
+            const addBtn = document.querySelector('#users .btn-primary');
+            if (addBtn) {
+                addBtn.addEventListener('click', () => this.showAddUserModal());
+            }
+            
+            // 表格行操作按鈕 - 動態綁定
+            document.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-sm');
+                if (!btn) return;
+                
+                if (btn.classList.contains('btn-outline-primary') || btn.classList.contains('edit-user')) {
+                    const userId = btn.closest('tr').cells[0].textContent;
+                    this.editUser(userId);
+                } 
+                else if (btn.classList.contains('btn-outline-danger') || btn.classList.contains('delete-user')) {
+                    const userId = btn.closest('tr').cells[0].textContent;
+                    const userName = btn.closest('tr').cells[2].textContent;
+                    this.deleteUser(userId, userName);
+                }
+            });
+            
+            // 保存按鈕
+            const saveBtn = document.getElementById('saveUserBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => this.saveUser());
+            }
+            
+            // 篩選器
+            const roleFilter = document.getElementById('roleFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const keywordFilter = document.getElementById('keywordFilter');
+            const filterBtn = document.getElementById('applyUserFilter');
+            
+            if (roleFilter) {
+                roleFilter.addEventListener('change', (e) => {
+                    this.filters.role = e.target.value;
+                });
+            }
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', (e) => {
+                    this.filters.status = e.target.value;
+                });
+            }
+            
+            if (keywordFilter) {
+                keywordFilter.addEventListener('input', (e) => {
+                    this.filters.keyword = e.target.value.trim();
+                });
+            }
+            
+            if (filterBtn) {
+                filterBtn.addEventListener('click', () => {
+                    this.loadData();
+                });
+            }
+        },
+        
+        // 初始化表單
+        initForm: function() {
+            const form = document.getElementById('userForm');
+            if (!form) return;
+            
+            // 設置角色選項
+            const roleSelect = form.querySelector('[name="role"]');
+            if (roleSelect) {
+                const options = [
+                    {value: '00', text: '一般使用者'},
+                    {value: '01', text: '管理員'},
+                    {value: '02', text: '開發人員'}
+                ];
+                
+                roleSelect.innerHTML = '<option value="">請選擇角色</option>';
+                options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option.value;
+                    opt.textContent = option.text;
+                    roleSelect.appendChild(opt);
+                });
+            }
+            
+            // 設置狀態選項
+            const statusSelect = form.querySelector('[name="status"]');
+            if (statusSelect) {
+                const options = ['一般', '暫停', '移除'];
+                statusSelect.innerHTML = '<option value="">請選擇狀態</option>';
+                options.forEach(option => {
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.textContent = option;
+                    statusSelect.appendChild(opt);
+                });
+            }
+            
+            // 設置所屬博物館選項
+            const museumSelect = form.querySelector('[name="museum"]');
+            if (museumSelect) {
+                // 根據環境選擇數據來源
+                if (typeof google !== 'undefined' && google.script) {
+                    google.script.run
+                        .withSuccessHandler(museums => {
+                            this.populateMuseumOptions(museumSelect, museums);
+                        })
+                        .getDataMuseums();
+                } else {
+                    // 測試環境使用模擬數據
+                    const defaultMuseums = [{id: 'nmp', name: '國立史前文化博物館'}];
+                    this.populateMuseumOptions(museumSelect, defaultMuseums);
+                }
+            }
+            
+            // 設置用戶ID自動生成預覽
+            const emailInput = form.querySelector('[name="email"]');
+            const roleInput = form.querySelector('[name="role"]');
+            
+            if (emailInput && roleInput) {
+                const updatePreview = () => {
+                    const idPreview = document.getElementById('userIdPreview');
+                    if (!idPreview) return;
+                    
+                    const email = emailInput.value.trim();
+                    const role = roleInput.value;
+                    
+                    if (email && role) {
+                        const userId = this.generateUserId(email, role);
+                        idPreview.textContent = userId;
+                    } else {
+                        idPreview.textContent = '';
+                    }
+                };
+                
+                emailInput.addEventListener('input', updatePreview);
+                roleInput.addEventListener('change', updatePreview);
+            }
+        },
+        
+        // 填充博物館選項
+        populateMuseumOptions: function(selectElement, museums) {
+            if (!selectElement) return;
+            
+            selectElement.innerHTML = '<option value="">請選擇所屬博物館</option>';
+            
+            // 處理不同格式的博物館數據
+            if (Array.isArray(museums)) {
+                if (museums.length > 0) {
+                    // 檢查是否為陣列格式（如從 GAS 獲取的數據）
+                    if (Array.isArray(museums[0])) {
+                        // 假設 museums 數據中第一行是標題
+                        const dataRows = museums.slice(1);
+                        
+                        dataRows.forEach(museum => {
+                            const opt = document.createElement('option');
+                            opt.value = museum[0]; // 假設博物館ID在第一列
+                            opt.textContent = museum[1] || museum[0]; // 假設博物館名稱在第二列，如果沒有則使用ID
+                            selectElement.appendChild(opt);
+                        });
+                    } else {
+                        // 假設為物件陣列格式（如直接從 JS 建立的對象）
+                        museums.forEach(museum => {
+                            const opt = document.createElement('option');
+                            opt.value = museum.id || museum.museumId;
+                            opt.textContent = museum.name || opt.value;
+                            selectElement.appendChild(opt);
+                        });
+                    }
+                }
+            }
+        },
+        
+        // 生成用戶ID
+        generateUserId: function(email, role) {
+            // 格式: email前4位+隨機四位數+角色代碼
+            const prefix = email.split('@')[0].substring(0, 5).toLowerCase();
+            const randomNum = Math.floor(1000 + Math.random() * 9000);
+            return `${prefix}${randomNum}_${role}`;
+        },
+        
+        // 載入數據
+        loadData: function() {
+            // 顯示載入指示器
+            this.showLoadingState(true);
+            
+            // 根據環境選擇數據來源
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(data => {
+                        const filteredData = this.filterUserData(data);
+                        this.renderTable(filteredData);
+                        this.showLoadingState(false);
+                    })
+                    .withFailureHandler(error => {
+                        console.error('載入用戶數據失敗:', error);
+                        this.showLoadingState(false);
+                        this.showError('載入數據失敗，請稍後再試。');
+                    })
+                    .getDataUsers();
+            } else {
+                // 測試環境使用模擬數據
+                setTimeout(() => {
+                    const mockData = 
+                        [ [ 'userId',
+                            'email',
+                            'name',
+                            'role',
+                            'dateCreated',
+                            'lastLogin',
+                            'museum',
+                            'status' ],
+                          [ 'sam230000_02',
+                            'sam2355008@gmail.com',
+                            'TK',
+                            '02',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user010000_00',
+                            'user01@test.com',
+                            'user01',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user020000_00',
+                            'user02@test.com',
+                            'user02',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user030000_00',
+                            'user03@test.com',
+                            'user03',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user040000_00',
+                            'user04@test.com',
+                            'user04',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user050000_00',
+                            'user05@test.com',
+                            'user05',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user060000_00',
+                            'user06@test.com',
+                            'user06',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user070000_00',
+                            'user07@test.com',
+                            'user07',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user080000_00',
+                            'user08@test.com',
+                            'user08',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user090000_00',
+                            'user09@test.com',
+                            'user09',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user100000_00',
+                            'user10@test.com',
+                            'user10',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user110000_00',
+                            'user11@test.com',
+                            'user11',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user120000_00',
+                            'user12@test.com',
+                            'user12',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user130000_00',
+                            'user13@test.com',
+                            'user13',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user140000_00',
+                            'user14@test.com',
+                            'user14',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user150000_00',
+                            'user15@test.com',
+                            'user15',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '一般' ],
+                          [ 'user160000_00',
+                            'user16@test.com',
+                            'user16',
+                            '00',
+                            '2025-03-20T09:14:33.100Z',
+                            '2025-03-20T09:14:33.100Z',
+                            'nmp',
+                            '暫停' ] ];
+                    
+                    
+                    const filteredData = this.filterUserData(mockData);
+                    this.renderTable(filteredData);
+                    this.showLoadingState(false);
+                }, 500);
+            }
+        },
+        
+        // 過濾用戶數據 - 改進對角色數值類型的處理
+        filterUserData: function(data) {
+            if (!data || !Array.isArray(data)) return [];
+            
+            // 轉換為對象陣列，如果是二維陣列
+            let userData = data;
+            if (data.length > 0 && Array.isArray(data[0])) {
+                userData = this.convertUsersDataToObjects(data);
+            }
+            
+            // 應用篩選器
+            return userData.filter(user => {
+                // 角色篩選 - 處理數字和字符串兩種可能的格式
+                if (this.filters.role && String(user.role) !== String(this.filters.role)) {
+                    return false;
+                }
+                
+                // 狀態篩選
+                if (this.filters.status && user.status !== this.filters.status) {
+                    return false;
+                }
+                
+                // 關鍵字篩選
+                if (this.filters.keyword) {
+                    const keyword = this.filters.keyword.toLowerCase();
+                    const searchableFields = [
+                        user.userId, user.email, user.name, user.museum
+                    ].map(val => String(val || '').toLowerCase());
+                    
+                    // 任一欄位包含關鍵字
+                    return searchableFields.some(field => field.includes(keyword));
+                }
+                
+                return true;
+            });
+        },
+        
+        // 將用戶數據轉換為物件陣列 - 處理數字類型的role欄位
+        convertUsersDataToObjects: function(usersData) {
+            if (!usersData || usersData.length <= 1) {
+                return [];
+            }
+            
+            // 假設第一行是標題行
+            const headers = usersData[0];
+            const idIdx = headers.indexOf('userId');
+            const emailIdx = headers.indexOf('email');
+            const nameIdx = headers.indexOf('name');
+            const roleIdx = headers.indexOf('role');
+            const dateCreatedIdx = headers.indexOf('dateCreated');
+            const lastLoginIdx = headers.indexOf('lastLogin');
+            const museumIdx = headers.indexOf('museum');
+            const statusIdx = headers.indexOf('status');
+            
+            // 從第二行開始遍歷，跳過標題行
+            const users = [];
+            for (let i = 1; i < usersData.length; i++) {
+                const row = usersData[i];
+                if (!row || row.length === 0) continue;
+                
+                const user = {
+                    userId: idIdx >= 0 ? row[idIdx] : row[0] || `user${i}`,
+                    email: emailIdx >= 0 ? row[emailIdx] : row[1] || '',
+                    name: nameIdx >= 0 ? row[nameIdx] : row[2] || '',
+                    role: roleIdx >= 0 ? row[roleIdx] : row[3] || '',
+                    dateCreated: dateCreatedIdx >= 0 ? row[dateCreatedIdx] : row[4] || '',
+                    lastLogin: lastLoginIdx >= 0 ? row[lastLoginIdx] : row[5] || '',
+                    museum: museumIdx >= 0 ? row[museumIdx] : row[6] || '',
+                    status: statusIdx >= 0 ? row[statusIdx] : row[7] || '一般'
+                };
+                
+                users.push(user);
+            }
+            
+            return users;
+        },
+        
+        // 渲染表格 - 改進角色顯示處理數字型別
+        renderTable: function(data) {
+            const tableBody = document.querySelector('#users table tbody');
+            const tableHead = document.querySelector('#users table thead');
+            if (!tableBody || !tableHead) return;
+            
+            // 更新表格標題
+            tableHead.innerHTML = `
+                <tr>
+                    <th>用戶ID</th>
+                    <th>電子郵件</th>
+                    <th>姓名</th>
+                    <th>角色</th>
+                    <th>創建日期</th>
+                    <th>最後登入</th>
+                    <th>所屬博物館</th>
+                    <th>狀態</th>
+                    <th>操作</th>
+                </tr>
+            `;
+            
+            // 清空表格
+            tableBody.innerHTML = '';
+            
+            if (!data || data.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="9" class="text-center">暫無數據</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            // 渲染數據
+            data.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // 格式化日期
+                const formatDate = (dateString) => {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) return dateString;
+                    return date.toLocaleDateString('zh-TW', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+                
+                // 角色顯示
+                const getRoleDisplay = (role) => {
+                    // 處理不同類型的role值
+                    const roleValue = String(role);
+                    switch (roleValue) {
+                        case '0': case '00': return '一般使用者';
+                        case '1': case '01': return '管理員';
+                        case '2': case '02': return '開發人員';
+                        default: return roleValue || '';
+                    }
+                };
+                
+                row.innerHTML = `
+                    <td>${user.userId || ''}</td>
+                    <td>${user.email || ''}</td>
+                    <td>${user.name || ''}</td>
+                    <td>${getRoleDisplay(user.role)}</td>
+                    <td>${formatDate(user.dateCreated)}</td>
+                    <td>${formatDate(user.lastLogin)}</td>
+                    <td>${user.museum || ''}</td>
+                    <td><span class="badge ${this.getStatusBadgeClass(user.status)}">${user.status || ''}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary edit-user" data-id="${user.userId}" title="編輯">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-user" data-id="${user.userId}" title="刪除">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        },
+        
+        // 獲取狀態對應的Badge樣式
+        getStatusBadgeClass: function(status) {
+            switch (status) {
+                case '一般':
+                    return 'bg-success';
+                case '暫停':
+                    return 'bg-warning';
+                case '移除':
+                    return 'bg-danger';
+                default:
+                    return 'bg-secondary';
+            }
+        },
+        
+        // 顯示/隱藏載入狀態
+        showLoadingState: function(isLoading) {
+            const table = document.querySelector('#users table');
+            const container = document.querySelector('#users');
+            if (!table || !container) return;
+            
+            if (isLoading) {
+                table.classList.add('loading');
+                
+                // 添加載入動畫
+                const loadingEl = document.createElement('div');
+                loadingEl.className = 'loading-indicator';
+                loadingEl.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">載入中...</span></div>';
+                loadingEl.style.position = 'absolute';
+                loadingEl.style.top = '50%';
+                loadingEl.style.left = '50%';
+                loadingEl.style.transform = 'translate(-50%, -50%)';
+                
+                // 先移除已存在的載入指示器
+                const existingIndicator = container.querySelector('.loading-indicator');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+                
+                container.style.position = 'relative';
+                container.appendChild(loadingEl);
+            } else {
+                table.classList.remove('loading');
+                
+                // 移除載入動畫
+                const loadingEl = container.querySelector('.loading-indicator');
+                if (loadingEl) {
+                    loadingEl.remove();
+                }
+            }
+        },
+        
+        // 顯示錯誤訊息
+        showError: function(message) {
+            const errorContainer = document.getElementById('userErrorContainer');
+            if (!errorContainer) {
+                // 創建錯誤容器
+                const container = document.querySelector('#users');
+                if (!container) return;
+                
+                const errorEl = document.createElement('div');
+                errorEl.id = 'userErrorContainer';
+                errorEl.className = 'alert alert-danger mt-3';
+                errorEl.setAttribute('role', 'alert');
+                errorEl.style.display = 'none';
+                container.prepend(errorEl);
+            }
+            
+            const errEl = document.getElementById('userErrorContainer');
+            if (message) {
+                errEl.textContent = message;
+                errEl.style.display = 'block';
+                
+                // 5秒後自動隱藏
+                setTimeout(() => {
+                    errEl.style.display = 'none';
+                }, 5000);
+            } else {
+                errEl.style.display = 'none';
+            }
+        },
+        
+        // 顯示新增用戶模態框
+        showAddUserModal: function() {
+            // 確保模態框存在
+            const modalElement = document.getElementById('userModal');
+            if (!modalElement) {
+                this.createUserModal();
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('userModal'));
+            document.getElementById('userModalTitle').textContent = '新增用戶';
+            document.getElementById('userForm').reset();
+            
+            // 清除用戶ID預覽
+            const idPreview = document.getElementById('userIdPreview');
+            if (idPreview) idPreview.textContent = '';
+            
+            // 設置當前日期為創建日期
+            const dateCreatedInput = document.getElementById('userForm').querySelector('[name="dateCreated"]');
+            if (dateCreatedInput) {
+                const now = new Date();
+                dateCreatedInput.value = now.toISOString();
+            }
+            
+            modal.show();
+        },
+        
+        // 創建用戶模態框
+        createUserModal: function() {
+            // 如果模態框不存在，創建它
+            const modalHTML = `
+                <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="userModalTitle">新增用戶</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="userForm">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">電子郵件 <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control" name="email" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">用戶姓名 <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="name" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">角色 <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="role" required></select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">帳號狀態 <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="status" required></select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">所屬博物館 <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="museum" required></select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">用戶ID (自動生成)</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" name="userId" readonly>
+                                                <span class="input-group-text" id="userIdPreview"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <input type="hidden" name="dateCreated">
+                                    <input type="hidden" name="lastLogin">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" id="saveUserBtn">儲存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 插入到body中
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // 初始化表單
+            this.initForm();
+        },
+        
+        // 編輯用戶
+        editUser: function(userId) {
+            // 確保模態框存在
+            if (!document.getElementById('userModal')) {
+                this.createUserModal();
+            }
+            
+            // 顯示載入指示器
+            this.showLoadingState(true);
+            
+            // 根據環境選擇數據來源
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(data => {
+                        this.showLoadingState(false);
+                        this.populateForm(this.findUserById(data, userId));
+                    })
+                    .withFailureHandler(error => {
+                        this.showLoadingState(false);
+                        console.error('載入用戶數據失敗:', error);
+                        this.showError('載入用戶數據失敗，請稍後再試。');
+                    })
+                    .getDataUsers();
+            } else {
+                // 測試環境使用模擬數據
+                setTimeout(() => {
+                    this.showLoadingState(false);
+                    const userData = {
+                        userId: userId,
+                        email: 'user@example.com',
+                        name: '測試用戶',
+                        role: '00',
+                        dateCreated: '2025-03-18T14:25:17.532Z',
+                        lastLogin: '2025-03-19T10:30:22.148Z',
+                        museum: 'nmp',
+                        status: '一般'
+                    };
+                    
+                    this.populateForm(userData);
+                }, 300);
+            }
+        },
+        
+        // 根據ID查找用戶
+        findUserById: function(data, userId) {
+            // 如果是物件陣列
+            if (data.length > 0 && !Array.isArray(data[0])) {
+                return data.find(user => user.userId === userId);
+            }
+            
+            // 如果是二維陣列
+            const headers = data[0];
+            const userIdIdx = headers.indexOf('userId');
+            if (userIdIdx < 0) return null;
+            
+            for (let i = 1; i < data.length; i++) {
+                if (data[i][userIdIdx] === userId) {
+                    return this.convertUsersDataToObjects([headers, data[i]])[0];
+                }
+            }
+            
+            return null;
+        },
+        
+        // 填充表單
+        populateForm: function(data) {
+            if (!data) {
+                console.error('無法找到用戶數據');
+                this.showError('無法找到指定用戶');
+                return;
+            }
+            
+            const form = document.getElementById('userForm');
+            if (!form) return;
+            
+            // 設置標題
+            document.getElementById('userModalTitle').textContent = '編輯用戶';
+            
+            // 填充表單欄位
+            for (const key in data) {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (!input) continue;
+                
+                if (input.tagName === 'SELECT') {
+                    // 處理下拉選單
+                    const options = Array.from(input.options);
+                    const option = options.find(opt => opt.value === data[key]);
+                    if (option) {
+                        option.selected = true;
+                    } else if (data[key]) {
+                        // 如果沒有找到匹配的選項，但有數據，添加一個新選項
+                        const newOption = document.createElement('option');
+                        newOption.value = data[key];
+                        newOption.textContent = data[key];
+                        newOption.selected = true;
+                        input.appendChild(newOption);
+                    }
+                } else {
+                    // 處理普通輸入欄位
+                    input.value = data[key];
+                }
+            }
+            
+            // 清除用戶ID預覽 (編輯模式不需要預覽)
+            const idPreview = document.getElementById('userIdPreview');
+            if (idPreview) idPreview.textContent = '';
+            
+            // 顯示模態框
+            const modal = new bootstrap.Modal(document.getElementById('userModal'));
+            modal.show();
+        },
+        
+        // 保存用戶 - 調整角色處理方式
+        saveUser: function() {
+            const form = document.getElementById('userForm');
+            if (!form) return;
+            
+            // 驗證表單
+            if (!this.validateForm(form)) return;
+            
+            // 獲取表單數據
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            // 獲取ID，判斷是新增還是更新
+            const isNew = !data.userId || data.userId === '';
+            
+            // 如果是新用戶，生成ID
+            if (isNew) {
+                // 確保角色值為數字
+                const roleVal = parseInt(data.role, 10) || 0;
+                data.userId = this.generateUserId(data.email, roleVal);
+                
+                // 設置創建日期為當前時間
+                if (!data.dateCreated) {
+                    data.dateCreated = new Date().toISOString();
+                }
+                
+                // 設置最後登入為空
+                if (!data.lastLogin) {
+                    data.lastLogin = '';
+                }
+            }
+            
+            // 保存數據
+            this.showLoadingState(true);
+            
+            // 根據環境選擇保存方式
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(() => {
+                        this.showLoadingState(false);
+                        bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                        this.loadData();
+                        alert(isNew ? '用戶新增成功' : '用戶更新成功');
+                    })
+                    .withFailureHandler(error => {
+                        this.showLoadingState(false);
+                        alert('保存失敗: ' + error);
+                    })
+                    .saveUser(data);
+            } else {
+                // 測試環境模擬保存
+                setTimeout(() => {
+                    this.showLoadingState(false);
+                    bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                    this.loadData();
+                    alert(isNew ? '用戶新增成功' : '用戶更新成功');
+                }, 500);
+            }
+        },
+        
+        // 驗證表單
+        validateForm: function(form) {
+            let isValid = true;
+            
+            // 移除所有現有的錯誤提示
+            form.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            form.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.remove();
+            });
+            
+            // 檢查必填欄位
+            const requiredFields = [
+                { name: 'email', message: '請輸入電子郵件', type: 'email' },
+                { name: 'name', message: '請輸入用戶姓名' },
+                { name: 'role', message: '請選擇角色' },
+                { name: 'status', message: '請選擇帳號狀態' },
+                { name: 'museum', message: '請選擇所屬博物館' }
+            ];
+            
+            requiredFields.forEach(field => {
+                const input = form.querySelector(`[name="${field.name}"]`);
+                if (!input) return;
+                
+                let fieldValid = true;
+                
+                // 檢查必填
+                if (!input.value.trim()) {
+                    fieldValid = false;
+                } 
+                // 檢查電子郵件格式
+                else if (field.type === 'email' && !this.validateEmail(input.value)) {
+                    fieldValid = false;
+                    field.message = '請輸入有效的電子郵件地址';
+                }
+                
+                if (!fieldValid) {
+                    input.classList.add('is-invalid');
+                    
+                    // 添加錯誤提示
+                    const feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    feedback.textContent = field.message;
+                    input.parentNode.appendChild(feedback);
+                    
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        },
+        
+        // 驗證電子郵件格式
+        validateEmail: function(email) {
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(email);
+        },
+        
+        // 刪除用戶
+        deleteUser: function(userId, userName) {
+            if (confirm(`確定要刪除用戶 "${userName || userId}" 嗎？此操作無法撤銷。`)) {
+                // 顯示載入指示器
+                this.showLoadingState(true);
+                
+                // 根據環境選擇刪除方式
+                if (typeof google !== 'undefined' && google.script) {
+                    google.script.run
+                        .withSuccessHandler(() => {
+                            this.showLoadingState(false);
+                            this.loadData();
+                            alert('用戶已刪除');
+                        })
+                        .withFailureHandler(error => {
+                            this.showLoadingState(false);
+                            alert('刪除失敗: ' + error);
+                        })
+                        .deleteUser(userId);
+                } else {
+                    // 測試環境模擬刪除
+                    setTimeout(() => {
+                        this.showLoadingState(false);
+                        this.loadData();
+                        alert('用戶已刪除');
+                    }, 500);
+                }
+            }
+        },
+        
+        // 刷新數據
+        refreshData: function() {
+            this.loadData();
+        }
+    };
+    
+    // 導出模組
+    // 在瀏覽器環境中，將模組附加到全局App對象
+    if (typeof window !== 'undefined' && window.App) {
+        window.App.userModule = UserModule;
+    }
+    
+    // 在Node.js環境中(測試環境)，將模組導出
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = UserModule;
+    } 
+
+    

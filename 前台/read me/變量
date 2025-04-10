@@ -1,0 +1,213 @@
+# frontend02.html 變量說明文件
+
+## 全局變量
+
+1. records
+   - 類型: 數組
+   - 功能: 存儲所有的記錄數據
+   - 使用: 保存點位記錄、顯示記錄列表、生成路線圖
+
+2. timerInterval
+   - 類型: 計時器ID
+   - 功能: 存儲全局計時器的interval ID
+   - 使用: 控制全局計時器的啟動和停止
+
+3. startTime
+   - 類型: Date對象
+   - 功能: 記錄開始計時的時間點
+   - 使用: 計算總共經過的時間
+
+4. currentArriveTime
+   - 類型: Date對象
+   - 功能: 記錄當前點位的到達時間
+   - 使用: 計算在特定點位的停留時間
+
+5. pointTimerInterval
+   - 類型: 計時器ID
+   - 功能: 存儲點位計時器的interval ID
+   - 使用: 未實際使用，可以移除
+
+6. currentLocation
+   - 類型: 字符串
+   - 功能: 存儲當前選中的點位位置ID
+   - 使用: 記錄當前正在操作的點位
+
+7. retryCount
+   - 類型: 數值
+   - 功能: 記錄數據發送失敗後的重試次數
+   - 問題: 未定義就使用，需要修正
+
+## 函數及其局部變量
+
+### initialize()
+- 功能: 頁面初始化，加載記錄數據
+
+### startTimer()
+- 功能: 啟動全局計時器
+- 變量:
+  - startTime: 設置計時開始時間
+
+### updateTimer()
+- 功能: 更新計時器顯示
+- 變量:
+  - now: 當前時間
+  - elapsedTime: 經過的時間
+  - hours, minutes, seconds: 格式化時間顯示
+  - pointElapsedTime: 點位經過的時間
+  - pointHours, pointMinutes, pointSeconds: 格式化點位時間
+  - staySeconds: 在點位停留的秒數
+
+### openModal(location)
+- 功能: 打開記錄活動模態框
+- 參數:
+  - location: 點位ID
+- 變量:
+  - currentArriveTime: 設置當前到達時間
+
+### closeModal()
+- 功能: 關閉記錄活動模態框
+
+### getMuseumId(), getExhibitionHall(), getUserId()
+- 功能: 獲取博物館ID、展廳代碼、用戶ID
+- 變量:
+  - 返回固定值，模擬獲取數據
+
+### getPointId(hotspotElement)
+- 功能: 獲取點位ID
+- 參數:
+  - hotspotElement: 點位元素
+
+### getArriveTime(), getLeaveTime()
+- 功能: 獲取到達時間和離開時間
+
+### calculateStaySeconds(arriveTime, leaveTime)
+- 功能: 計算停留秒數
+- 參數:
+  - arriveTime: 到達時間
+  - leaveTime: 離開時間
+- 變量:
+  - arrive: 到達時間對象
+  - leave: 離開時間對象
+
+### getInteractionCount(), getInteractionType(), getNotes()
+- 功能: 獲取互動次數、互動類型、備註信息
+- 變量:
+  - interactionCountInput: 互動次數輸入框
+  - checkboxes: 互動類型複選框
+  - selectedValues: 選中的互動類型值
+  - notesInput: 備註輸入框
+
+### generateRecordId(museumId, exhibitionHall)
+- 功能: 生成記錄ID
+- 參數:
+  - museumId: 博物館ID
+  - exhibitionHall: 展廳代碼
+- 變量:
+  - date: 當前日期對象
+  - dateString: 格式化日期字符串
+  - sequence: 序列號
+
+### saveRecord()
+- 功能: 保存記錄
+- 變量:
+  - saveBtn: 保存按鈕元素
+  - originalText: 按鈕原始文本
+  - museumId, exhibitionHall, recordId, userId, pointId: 各種ID信息
+  - arriveTime, leaveTime: 到達和離開時間
+  - staySeconds, totalSeconds: 停留秒數和總秒數
+  - interactionCount, interactionType, notes: 互動信息和備註
+  - now, formattedDate, hours, minutes: 當前時間信息
+  - record: 生成的記錄對象
+
+### loadRecords()
+- 功能: 加載並顯示記錄列表
+- 變量:
+  - recordsList: 記錄列表容器
+  - recordItem: 單個記錄元素
+
+### deleteRecord(id)
+- 功能: 標記記錄為刪除
+- 參數:
+  - id: 記錄ID
+- 變量:
+  - recordIndex: 記錄在數組中的索引
+
+### resetRecording()
+- 功能: 重置記錄和界面
+- 變量: (無局部變量)
+
+### sendDataToGoogleSheet()
+- 功能: 發送數據到Google Sheet
+- 變量:
+  - allRecords: 所有記錄
+  - records: 過濾後的有效記錄
+  - visitorInfo: 訪客信息
+  - data: 要發送的數據對象
+  - retryCount: 重試計數(未定義)
+  - recordsContainer: 記錄容器元素(ID不匹配)
+  - floorplanContainer: 平面圖容器元素
+
+### checkFailedSubmissions()
+- 功能: 檢查是否有失敗的提交需要重試
+- 變量:
+  - failedSubmission: 失敗提交的數據
+  - submission: 解析後的提交對象
+  - timestamp: 提交時間
+  - now: 當前時間
+
+### generateRouteMap(shouldSendData)
+- 功能: 生成路線圖
+- 參數:
+  - shouldSendData: 是否在生成後發送數據
+- 變量:
+  - allRecords: 所有記錄
+  - records: 過濾後的有效記錄(覆蓋全局變量)
+  - svg: SVG元素
+  - routeGroup: 路線組元素
+  - routeDrawingComplete: 路線繪製完成標記
+  - 嵌套函數drawRoute() - index: 當前記錄索引
+    - currentRecord, nextRecord: 當前和下一個記錄
+    - currentHotspot, nextHotspot: 對應的點位元素
+    - currentRect, nextRect, svgRect: 元素位置
+    - x1, y1, x2, y2: 計算的SVG坐標
+    - line: 線段元素
+    - textElement, lastTextElement: 文本元素
+
+### showToast(message, duration)
+- 功能: 顯示提示信息
+- 參數:
+  - message: 提示消息
+  - duration: 顯示時間(默認2000ms)
+- 變量:
+  - toast: 提示元素
+
+## 事件處理函數中的變量
+- DOMContentLoaded事件:
+  - today: 當前日期
+  - formattedDate: 格式化日期
+  - hours, minutes: 當前時間
+  - hotspots: 所有點位元素
+  - container: 容器元素
+  - buttonsContainer: 按鈕容器
+  - newRecordButton: 開始新記錄按鈕
+  - endButton: 結束記錄按鈕
+
+- 不同意按鈕事件:
+  無特殊局部變量
+
+- 同意按鈕事件:
+  - museumId, exhibitionHall: ID信息
+  - today: 當前日期
+  - dateString: 格式化日期
+  - recordId: 生成的記錄ID
+
+- 表單提交事件:
+  - gender: 性別選項
+  - ageGroup, education, residence: 基本信息
+  - visitPurpose, visitFrequency: 訪問信息
+  - genderCode, ageCode, eduCode, resCode: 代碼信息
+  - randomCode: 隨機碼
+  - visitorId: 生成的訪客ID
+  - formData: 表單數據
+  - visitorData: 訪客數據對象
+  - floorplanContainer: 平面圖容器元素

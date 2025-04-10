@@ -1,0 +1,1783 @@
+<!--CURSOR1.3-->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>互動式平面圖</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    
+    .main-container {
+      display: flex;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 15px;
+      flex-wrap: wrap; /* 在小屏幕上允許換行 */
+    }
+    
+    .left-column {
+      flex: 75%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    
+    .right-column {
+      flex: 25%;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    
+    .floorplan-container {
+      position: relative;
+      width: 100%;
+      overflow: auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .floorplan {
+      background-image: url('https://i.imgur.com/Pj5JrSI.jpeg');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      width: 1108px;
+      height: 945px;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+    
+    .buttons-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+      flex-wrap: wrap; /* 在小屏幕上允許換行 */
+    }
+    
+    .records-list {
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      height: calc(100vh - 250px);
+      overflow-y: auto;
+    }
+    
+    /* 保持原有的其他樣式 */
+    .hotspot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #e74c3c; /* 預設紅色 */
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .hotspot:hover {
+      transform: scale(1.5);
+      background-color: #c0392b;
+    }
+
+    /* 各組點位顏色 */
+    .hotspot-group-1 {
+      background-color: #ff0707; /* 紅色 */
+      border: 1px solid #4e5053; /* 添加邊框使白色點位可見 */
+    }
+    .hotspot-group-1:hover {
+      background-color: #c0392b; /* 深紅色 */
+    }
+    
+    .hotspot-group-2 {
+      background-color: #291af8; /* 橙色 */
+      border: 1px solid #4e5053; /* 添加邊框使白色點位可見 */
+    }
+    .hotspot-group-2:hover {
+      background-color: #1004b9; /* 深橙色 */
+    }
+    
+    .hotspot-group-3 {
+      background-color: #e4d105; /* 白色 */
+      border: 1px solid #4e5053; /* 添加邊框使白色點位可見 */
+    }
+    .hotspot-group-3:hover {
+      background-color: #b1b107; /* 淺灰色 */
+    }
+    
+    .hotspot-group-4 {
+      background-color: #2ecc71; /* 綠色 */
+      border: 1px solid #4e5053; /* 添加邊框使白色點位可見 */
+    }
+    .hotspot-group-4:hover {
+      background-color: #27ae60; /* 深綠色 */
+    }
+    
+    .hotspot-group-5 {
+      background-color: #56b4f2; /* 藍色 */
+      border: 1px solid #4e5053; /* 添加邊框使白色點位可見 */
+    }
+    .hotspot-group-5:hover {
+      background-color: #2980b9; /* 深藍色 */
+    }
+    
+    .hotspot-group-6 {
+      background-color: #9b59b6; /* 紫色 */
+      border: 1px solid #4e5053; /* 添加邊框使白色點位可見 */
+    }
+    .hotspot-group-6:hover {
+      background-color: #8e44ad; /* 深紫色 */
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 10;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .save-btn {
+      background-color: #2ecc71;
+      color: white;
+    }
+    .cancel-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .room {
+      position: absolute;
+      background-color: #ecf0f1;
+      border: 1px solid #bdc3c7;
+    }
+    .records-list {
+      margin-top: 20px;
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .records-container {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #f9f9f9;
+    }
+    .record-item {
+      position: relative; /* 確保已有的 record-item 類具有相對定位 */
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .record-item:last-child {
+      border-bottom: none;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    .hotspot-name {
+      position: absolute; /* 絕對定位 */
+      bottom: -17px; /* 底部偏移量 */
+      left: 50%; /* 水平居中 */
+      transform: translateX(-50%); /* 水平居中調整 */
+      white-space: nowrap; /* 防止文本換行 */
+      font-size: 9px; /* 字體大小 */
+      color: #fafafa; /* 字體顏色 */
+      background-color: rgba(35, 40, 42, 0.77); /* 背景顏色和透明度 */
+      padding: 2px 5px; /* 內邊距 */
+      border-radius: 20px; /* 橢圓形效果 */
+      display: inline-block; /* 行內塊元素 */
+      text-align: center; /* 文本居中 */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 輕微陰影增加可讀性 */
+    }
+    
+    .timer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: rgba(52, 152, 219, 0.6); /* 藍色，透明度60% */
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    /*點位計時器*/
+    .point-timer {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background-color: rgba(243, 156, 18, 0.6); /* 橘色，透明度60% */
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    
+    /* 勾選框樣式 */
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .checkbox-category {
+      border: 1px solid #eee;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 5px;
+    }
+    
+    .checkbox-category h4 {
+      margin: 0 0 10px 0;
+      color: #3498db;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .checkbox-item input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+    
+    .checkbox-item label {
+      display: inline;
+      font-weight: normal;
+    }
+    
+    /* 手機優化 */
+    @media (max-width: 768px) {
+      .modal-content {
+        width: 95%;
+        padding: 15px;
+      }
+      
+      .checkbox-item {
+        padding: 8px 0;
+      }
+      
+      .checkbox-item label {
+        font-size: 16px; /* 更大的字體，更容易點擊 */
+      }
+      
+      input[type="checkbox"] {
+        transform: scale(1.5); /* 更大的勾選框 */
+      }
+      
+      .records-container {
+        max-height: 250px;
+      }
+      
+      .record-item {
+        padding: 8px;
+        font-size: 14px;
+      }
+    }
+
+    /* 遮罩層樣式 */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+    }
+
+    /* 授權書和訪客資料模態窗樣式 */
+    .consent-modal, .visitor-modal {
+      display: none;
+      position: fixed;
+      z-index: 1001;
+      justify-content: center;
+      align-items: center;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 表單樣式 */
+    .radio-group, .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .radio-group label, .checkbox-group label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+      margin-bottom: 5px;
+    }
+
+    .radio-group input[type="radio"], .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    /* 按鈕樣式 */
+    .agree-btn {
+      background-color: #4CAF50; /* 綠色 */
+      color: white;
+    }
+
+    .disagree-btn {
+      background-color: #f44336; /* 紅色 */
+      color: white;
+    }
+
+    .submit-btn {
+      background-color: #2196F3; /* 藍色 */
+      color: white;
+    }
+
+    /* 居住地選項樣式 */
+    #residence option:first-letter {
+      font-size: 1.5em;
+      color: #3498db; /* 藍色 */
+    }
+
+    /* 結束記錄按鈕樣式 */
+    .end-btn {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      margin: 20px auto;
+      display: block;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .end-btn:hover {
+      background-color: #2980b9;}
+    
+
+    /* Toast 提示樣式 */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 16px;
+      z-index: 2000;
+      max-width: 80%;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      animation: fadeInOut 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, 20px); }
+      100% { opacity: 1; transform: translate(-50%, 0); }
+    }
+    
+    /* 針對手機設備的優化 */
+    @media (max-width: 768px) {
+      .toast {
+        font-size: 14px;
+        padding: 10px 20px;
+        bottom: 20px;
+      }
+    }
+
+    /* 在現有的 CSS 樣式部分，添加以下樣式定義 */
+    .sequence-number {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: rgba(120, 120, 120, 0.7);
+      font-size: 12px;
+      font-weight: normal;
+      font-family: monospace; /* 使用等寬字體，確保數字對齊 */
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>互動式平面圖</h1>
+    <p>點擊平面圖上的點位可以記錄時間和活動</p>
+    
+    <div class="floorplan" id="floorplan">
+      <!-- 點位 -->
+      <div class="hotspot" style="top: 757.7638854980469px; left: 918.0164184570312px;" data-location="1-1"> <div class="hotspot-name">1-1</div> </div>
+      <div class="hotspot" style="top: 843.7638854980469px; left: 892.0164184570312px;" data-location="1-2"> <div class="hotspot-name">1-2</div> </div>
+      <div class="hotspot" style="top: 834.7638854980469px; left: 1017.0164184570312px;" data-location="1-3"> <div class="hotspot-name">1-3</div> </div>
+      <div class="hotspot" style="top: 748.6327667236328px; left: 1011.0164184570312px;" data-location="2-1"> <div class="hotspot-name">2-1</div> </div>
+      <div class="hotspot" style="top: 662.6327667236328px; left: 941.0164184570312px;" data-location="2-2"> <div class="hotspot-name">2-2</div> </div>
+      <div class="hotspot" style="top: 627.6327667236328px; left: 911.0164184570312px;" data-location="2-3"> <div class="hotspot-name">2-3</div> </div>
+      <div class="hotspot" style="top: 646.6327667236328px; left: 1064.0164184570312px;" data-location="2-4"> <div class="hotspot-name">2-4</div> </div>
+      <div class="hotspot" style="top: 522.2032699584961px; left: 783.0164184570312px;" data-location="3-1"> <div class="hotspot-name">3-1</div> </div>
+      <div class="hotspot" style="top: 416.2032699584961px; left: 725.0164184570312px;" data-location="3-2"> <div class="hotspot-name">3-2</div> </div>
+      <div class="hotspot" style="top: 338.2032699584961px; left: 785.0164184570312px;" data-location="3-3"> <div class="hotspot-name">3-3</div> </div>
+      <div class="hotspot" style="top: 355.2032699584961px; left: 842.0164184570312px;" data-location="4-1"> <div class="hotspot-name">4-1</div> </div>
+      <div class="hotspot" style="top: 349.12459564208984px; left: 1079.0164184570312px;" data-location="4-2"> <div class="hotspot-name">4-2</div> </div>
+      <div class="hotspot" style="top: 254.12459564208984px; left: 1082.0164184570312px;" data-location="4-3"> <div class="hotspot-name">4-3</div> </div>
+      <div class="hotspot" style="top: 263.12459564208984px; left: 1002.0164184570312px;" data-location="4-4"> <div class="hotspot-name">4-4</div> </div>
+      <div class="hotspot" style="top: 196.12459564208984px; left: 914.0164184570312px;" data-location="5-1"> <div class="hotspot-name">5-1</div> </div>
+      <div class="hotspot" style="top: 50.124595642089844px; left: 790.0164184570312px;" data-location="5-2"> <div class="hotspot-name">5-2</div> </div>
+      <div class="hotspot" style="top: 126.12459564208984px; left: 785.0164184570312px;" data-location="5-3"> <div class="hotspot-name">5-3</div> </div>
+      <div class="hotspot" style="top: 220.12459564208984px; left: 719.0164184570312px;" data-location="5-4"> <div class="hotspot-name">5-4</div> </div>
+      <div class="hotspot" style="top: 38.124595642089844px; left: 609.0164184570312px;" data-location="5-5"> <div class="hotspot-name">5-5</div> </div>
+      <div class="hotspot" style="top: 134.12459564208984px; left: 492.01641845703125px;" data-location="6-1"> <div class="hotspot-name">6-1</div> </div>
+      <div class="hotspot" style="top: 36.124595642089844px; left: 431.01641845703125px;" data-location="6-2"> <div class="hotspot-name">6-2</div> </div>
+      <div class="hotspot" style="top: 37.124595642089844px; left: 302.01641845703125px;" data-location="6-3"> <div class="hotspot-name">6-3</div> </div>
+      </div>
+    </div>
+    
+    <div class="records-list">
+      <h2>已記錄的活動</h2>
+      <div class="records-container" id="recordsList"></div>
+    </div>
+  </div>
+  
+  <!-- 彈出式表單 -->
+  <div class="modal" id="activityModal">
+    <div class="modal-content">
+      <h2>記錄活動</h2>
+      <div class="form-group">
+        <label for="location">點位ID:</label>
+        <input type="text" id="location" readonly>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="recordId">紀錄ID:</label>
+        <input type="text" id="recordId" readonly>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="museumId">博物館ID:</label>
+        <input type="text" id="museumId" readonly>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="userId">記錄者ID:</label>
+        <input type="text" id="userId" readonly>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="arriveTime">到達時間:</label>
+        <input type="text" id="arriveTime" readonly>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="leaveTime">離開時間:</label>
+        <input type="text" id="leaveTime" readonly>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="staySeconds">停留秒數:</label>
+        <input type="number" id="staySeconds" readonly>
+        <small>正在紀錄時間，請待觀眾離開展位後再按下儲存</small>
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="date">日期:</label>
+        <input type="date" id="date">
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="time">時間:</label>
+        <input type="time" id="time">
+      </div>
+      <div class="form-group" style="display: none;">
+        <label for="interactionCount">互動次數:</label>
+        <input type="number" id="interactionCount" min="0" value="0">
+      </div>
+      <div class="form-group">
+        <label>互動行為:</label>
+        <div class="checkbox-group">
+          <div class="checkbox-category">
+            <h4>觀看</h4>
+            <div class="checkbox-item">
+              <input type="checkbox" id="watch-sign" name="interactionType" value="觀看告示牌">
+              <label for="watch-sign">觀看告示牌</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="watch-exhibit" name="interactionType" value="觀看展品">
+              <label for="watch-exhibit">觀看展品</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="watch-video" name="interactionType" value="觀看影片">
+              <label for="watch-video">觀看影片</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="watch-model" name="interactionType" value="觀看模型">
+              <label for="watch-model">觀看模型</label>
+            </div>
+          </div>
+          
+          <div class="checkbox-category">
+            <h4>聆聽</h4>
+            <div class="checkbox-item">
+              <input type="checkbox" id="listen-guide" name="interactionType" value="聆聽導覽">
+              <label for="listen-guide">聆聽導覽</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="listen-music" name="interactionType" value="聆聽音樂">
+              <label for="listen-music">聆聽音樂</label>
+            </div>
+          </div>
+          
+          <div class="checkbox-category">
+            <h4>互動</h4>
+            <div class="checkbox-item">
+              <input type="checkbox" id="touch-model" name="interactionType" value="觸摸模型">
+              <label for="touch-model">觸摸模型</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="interactive-projection" name="interactionType" value="互動式投影">
+              <label for="interactive-projection">互動式投影</label>
+            </div>
+          </div>
+          
+          <div class="checkbox-category">
+            <h4>紀錄</h4>
+            <div class="checkbox-item">
+              <input type="checkbox" id="take-photo" name="interactionType" value="拍照">
+              <label for="take-photo">拍照</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="record-audio" name="interactionType" value="錄音">
+              <label for="record-audio">錄音</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="record-video" name="interactionType" value="錄影">
+              <label for="record-video">錄影</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="take-notes" name="interactionType" value="筆記">
+              <label for="take-notes">筆記</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="other" name="interactionType" value="其他">
+              <label for="other">其他</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="notes">備註:</label>
+        <textarea id="notes" rows="3"></textarea>
+      </div>
+      <div class="buttons">
+        <button class="cancel-btn" onclick="closeModal()">取消</button>
+        <button class="save-btn">儲存</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="timer" id="timer">00:00:00</div>
+  <div class="point-timer" id="pointTimer" style="display: none;">當前點位: 00:00:00</div>
+
+  <!-- 灰色遮罩層 -->
+  <div id="endRecordOverlay" class="overlay" style="display: none;"></div>
+
+  <!-- 觀眾授權書模態窗 -->
+  <div id="consentModal" class="modal consent-modal" style="display: none;">
+    <div class="modal-content">
+      <h2>觀眾授權書</h2>
+      <p>感謝您參與本次展覽體驗。我們希望收集您的行為數據以改善展覽體驗。</p>
+      <p>您的數據將僅用於研究目的，且不會與您的個人身份關聯。</p>
+      <div class="buttons">
+        <button id="disagreeBtn" class="disagree-btn">不同意</button>
+        <button id="agreeBtn" class="agree-btn">同意</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 基本資料收集表單模態窗 -->
+  <div id="visitorInfoModal" class="modal visitor-modal" style="display: none;">
+    <div class="modal-content">
+      <h2>基本資料收集</h2>
+      <form id="visitorInfoForm">
+        <!-- 隱藏欄位 -->
+        <input type="hidden" id="visitorId" name="visitorId">
+        <input type="hidden" id="formRecordId" name="recordId">
+        <input type="hidden" id="formVersion" name="formVersion" value="1.0">
+        <input type="hidden" id="totalSeconds" name="totalSeconds">
+        
+        <!-- 性別 -->
+        <div class="form-group">
+          <label>性別：</label>
+          <div class="radio-group">
+            <label><input type="radio" name="gender" value="生理男性" data-code="M"> 生理男性</label>
+            <label><input type="radio" name="gender" value="生理女性" data-code="F"> 生理女性</label>
+            <label><input type="radio" name="gender" value="非二元性別" data-code="N"> 非二元性別</label>
+            <label><input type="radio" name="gender" value="其他" data-code="O"> 其他</label>
+            <label><input type="radio" name="gender" value="不願透漏" data-code="d"> 不願透漏</label>
+          </div>
+        </div>
+        
+        <!-- 年齡層 -->
+        <div class="form-group">
+          <label for="ageGroup">年齡層：</label>
+          <select id="ageGroup" name="ageGroup" required>
+            <option value="">請選擇</option>
+            <option value="0-12" data-code="0">0-12</option>
+            <option value="13-18" data-code="13">13-18</option>
+            <option value="19-24" data-code="19">19-24</option>
+            <option value="25-34" data-code="25">25-34</option>
+            <option value="35-44" data-code="35">35-44</option>
+            <option value="45-54" data-code="45">45-54</option>
+            <option value="55-64" data-code="55">55-64</option>
+            <option value="65-74" data-code="65">65-74</option>
+            <option value="75-84" data-code="75">75-84</option>
+            <option value="85-94" data-code="85">85-94</option>
+            <option value="95以上" data-code="95">95以上</option>
+          </select>
+        </div>
+        
+        <!-- 教育程度 -->
+        <div class="form-group">
+          <label for="education">教育程度：</label>
+          <select id="education" name="education" required>
+            <option value="">請選擇</option>
+            <option value="國小或以下" data-code="01">國小或以下</option>
+            <option value="國中" data-code="02">國中</option>
+            <option value="高中/職" data-code="03">高中/職</option>
+            <option value="專科" data-code="04">專科</option>
+            <option value="大學" data-code="05">大學</option>
+            <option value="研究所" data-code="06">研究所</option>
+            <option value="其他" data-code="06">其他</option>
+            <option value="不願透漏" data-code="00">不願透漏</option>
+          </select>
+        </div>
+        
+        <!-- 居住地 -->
+        <div class="form-group">
+          <label for="residence">居住地：</label>
+          <select id="residence" name="residence" required>
+            <option value="">請選擇</option>
+            <option value="台東縣" data-code="TT">台東縣</option>
+            <option value="花蓮縣" data-code="HL">花蓮縣</option>
+            <option value="宜蘭縣" data-code="IL">宜蘭縣</option>
+            <option value="新北市" data-code="TP">新北市</option>
+            <option value="基隆市" data-code="KL">基隆市</option>
+            <option value="台北市" data-code="TP">台北市</option>
+            <option value="桃園市" data-code="TY">桃園市</option>
+            <option value="新竹縣" data-code="HJ">新竹縣</option>
+            <option value="新竹市" data-code="HS">新竹市</option>
+            <option value="苗栗縣" data-code="ML">苗栗縣</option>
+            <option value="台中市" data-code="TC">台中市</option>
+            <option value="彰化縣" data-code="CH">彰化縣</option>
+            <option value="南投縣" data-code="NT">南投縣</option>
+            <option value="雲林縣" data-code="YL">雲林縣</option>
+            <option value="嘉義縣" data-code="CY">嘉義縣</option>
+            <option value="嘉義市" data-code="CY">嘉義市</option>
+            <option value="台南市" data-code="TN">台南市</option>
+            <option value="高雄市" data-code="KS">高雄市</option>
+            <option value="屏東縣" data-code="PT">屏東縣</option>
+            <option value="澎湖縣" data-code="PH">澎湖縣</option>
+            <option value="金門縣" data-code="KH">金門縣</option>
+            <option value="連江縣" data-code="LY">連江縣</option>
+            <option value="其他" data-code="OT">其他</option>
+            <option value="不願透漏" data-code="di">不願透漏</option>
+          </select>
+        </div>
+        
+        <!-- 參觀目的 -->
+        <div class="form-group">
+          <label>參觀目的：</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="visitPurpose" value="學習"> 學習</label>
+            <label><input type="checkbox" name="visitPurpose" value="休閒"> 休閒</label>
+            <label><input type="checkbox" name="visitPurpose" value="其他"> 其他</label>
+          </div>
+        </div>
+        
+        <!-- 參觀頻率 -->
+        <div class="form-group">
+          <label>參觀頻率：</label>
+          <div class="radio-group">
+            <label><input type="radio" name="visitFrequency" value="每年1-2次"> 每年1-2次</label>
+            <label><input type="radio" name="visitFrequency" value="每年3-4次"> 每年3-4次</label>
+            <label><input type="radio" name="visitFrequency" value="每年5-6次"> 每年5-6次</label>
+            <label><input type="radio" name="visitFrequency" value="每年7-8次"> 每年7-8次</label>
+            <label><input type="radio" name="visitFrequency" value="每年9-10次"> 每年9-10次</label>
+            <label><input type="radio" name="visitFrequency" value="每年11-12次"> 每年11-12次</label>
+            <label><input type="radio" name="visitFrequency" value="每年13次以上"> 每年13次以上</label>
+            <label><input type="radio" name="visitFrequency" value="不願透漏"> 不願透漏</label>
+          </div>
+        </div>
+        
+        <div class="buttons">
+          <button type="submit" class="submit-btn">送出</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" style="display: none;"></div>
+
+  <script>
+    // 在全局範圍內定義 records 變量
+    let records = [];
+    let timerInterval;
+    let startTime;
+    let currentArriveTime; // 記錄當前點位的到達時間
+    let pointTimerInterval; // 當前點位的計時器
+    let currentLocation = '';
+    let retryCount = 0; // 添加重試計數變量
+
+    // 初始化函數 (initialize)
+    // 功能: 在頁面加載時初始化應用程序狀態
+    // 執行邏輯:
+    //   1. 檢查localStorage中是否有先前保存的記錄
+    //   2. 若有記錄，詢問用戶是否載入
+    //   3. 根據用戶選擇，載入或清除數據
+    //   4. 處理解析錯誤，確保程序穩定性
+    //   5. 呼叫loadRecords()顯示記錄
+    // 防護措施: 使用try-catch處理JSON解析錯誤
+    // 調用時機: 頁面DOMContentLoaded事件
+    function initialize() {
+      // 從本地存儲加載記錄
+      try {
+        const savedRecords = localStorage.getItem('floorplanRecords');
+        if (savedRecords && savedRecords !== '[]') {
+          // 偵測到未儲存資料，詢問是否載入
+          if (confirm('偵測到未儲存資料，是否載入先前資料？')) {
+            records = JSON.parse(savedRecords);
+            showToast('已載入先前資料', 2000);
+          } else {
+            records = [];
+            localStorage.removeItem('floorplanRecords');
+            showToast('先前資料已清除', 2000);
+          }
+        } else {
+          records = [];
+        }
+      } catch (error) {
+        console.error('加載記錄時發生錯誤:', error);
+        records = []; //如果錯誤則清空
+      }
+      
+      loadRecords();
+    }
+
+    // 開始計時器函數 (startTimer)
+    // 功能: 啟動全局計時器，記錄用戶活動時間
+    // 執行邏輯:
+    //   1. 記錄開始時間
+    //   2. 設置計時器間隔，每秒更新一次
+    // 關聯函數: updateTimer()
+    // 全局變量: startTime, timerInterval
+    function startTimer() {
+      startTime = new Date();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    // 更新計時器函數 (updateTimer)
+    // 功能: 更新主計時器和點位計時器顯示
+    // 執行邏輯:
+    //   1. 計算自startTime以來經過的總時間
+    //   2. 格式化時間為HH:MM:SS格式
+    //   3. 如有當前點位，同時更新點位計時器
+    //   4. 更新停留秒數表單欄位
+    // 調用時機: 由timerInterval每秒調用一次
+    // 依賴變量: startTime, currentArriveTime
+    function updateTimer() {
+      const now = new Date();
+      const elapsedTime = new Date(now - startTime);
+      const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
+      const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+      document.getElementById('timer').textContent = `${hours}:${minutes}:${seconds}`;
+      
+      // 如果當前有打開的點位，更新點位計時器
+      if (currentArriveTime) {
+        const pointElapsedTime = new Date(now - currentArriveTime);
+        const pointHours = String(pointElapsedTime.getUTCHours()).padStart(2, '0');
+        const pointMinutes = String(pointElapsedTime.getUTCMinutes()).padStart(2, '0');
+        const pointSeconds = String(pointElapsedTime.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('pointTimer').textContent = `當前點位: ${pointHours}:${pointMinutes}:${pointSeconds}`;
+        
+        // 更新停留秒數欄位
+        const staySeconds = Math.floor((now - currentArriveTime) / 1000);
+        document.getElementById('staySeconds').value = staySeconds;
+      }
+    }
+    
+    // 轉換為台灣時區ISO字符串函數 (toTaiwanISOString)
+    // 功能: 將Date對象轉換為台灣時區(UTC+8)的ISO格式字符串
+    // 參數: date - Date對象
+    // 返回值: 符合ISO 8601標準的台灣時區時間字符串
+    // 執行邏輯:
+    //   1. 計算台灣時區偏移(+8小時)
+    //   2. 調整UTC時間為台灣時間
+    //   3. 轉換為ISO格式並添加時區標識符
+    // 使用場景: 記錄時間戳、數據提交
+    function toTaiwanISOString(date) {
+      // 取得台灣時區偏移量（+8小時，單位為分鐘）
+      const taiwanOffset = 8 * 60;
+      
+      // 取得當前日期的 UTC 時間戳記（毫秒）
+      const utcTime = date.getTime();
+      
+      // 將 UTC 時間加上台灣時區偏移（轉換為台灣時間）
+      const taiwanTime = new Date(utcTime + (taiwanOffset * 60 * 1000));
+      
+      // 格式化為 ISO 字串，但移除最後的 Z（表示這不是 UTC 時間）
+      const isoString = taiwanTime.toISOString().replace('Z', '');
+      
+      // 添加台灣時區標識
+      return `${isoString}+08:00`;
+    }
+
+    // 打開模態框函數 (openModal)
+    // 功能: 打開記錄活動的模態框並初始化數據
+    // 參數: location - 點位位置ID
+    // 執行邏輯:
+    //   1. 設置當前位置
+    //   2. 填充位置輸入框
+    //   3. 記錄到達時間
+    //   4. 顯示點位計時器
+    //   5. 顯示模態框
+    // 全局變量: currentLocation, currentArriveTime
+    function openModal(location) {
+      currentLocation = location;
+      document.getElementById('location').value = location;
+      
+      // 記錄當前點位的到達時間
+      currentArriveTime = new Date();
+      document.getElementById('arriveTime').value = toTaiwanISOString(currentArriveTime);
+      
+      document.getElementById('pointTimer').style.display = 'block';
+      
+      document.getElementById('activityModal').style.display = 'flex';
+    }
+    
+    // 關閉模態框函數 (closeModal)
+    // 功能: 關閉記錄活動的模態框並重置表單
+    // 執行邏輯:
+    //   1. 隱藏模態框
+    //   2. 清空備註輸入框
+    //   3. 取消所有互動類型複選框選中狀態
+    //   4. 隱藏點位計時器
+    //   5. 重置當前到達時間
+    function closeModal() {
+      document.getElementById('activityModal').style.display = 'none';
+      document.getElementById('notes').value = '';
+      
+      // 清除所有勾選框
+      const checkboxes = document.querySelectorAll('input[name="interactionType"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      
+      // 隱藏點位計時器
+      document.getElementById('pointTimer').style.display = 'none';
+      currentArriveTime = null;
+    }
+
+    function getMuseumId() {
+      // 假設有函數獲取當前選擇的博物館ID
+      return 'A'; // 預設博物館代號為 A
+    }
+
+    function getExhibitionHall() {
+      // 假設有函數獲取當前選擇的展廳代碼
+      return 'B'; // 預設展廳代號為 B
+    }
+
+    function getUserId() {
+      // 假設有函數獲取當前用戶ID
+      return '0000'; // 預設用戶代號為 0000
+    }
+
+    function getPointId(hotspotElement) {
+      return hotspotElement.getAttribute('data-location');
+    }
+    
+    function getArriveTime() {
+      //獲取到達時間。
+      return toTaiwanISOString(new Date());
+    }
+
+    function getLeaveTime() {
+      //獲取離開時間
+      return toTaiwanISOString(new Date());
+    }
+
+    function calculateStaySeconds(arriveTime, leaveTime) {
+      const arrive = new Date(arriveTime);
+      const leave = new Date(leaveTime);
+      return Math.floor((leave - arrive) / 1000); // 以秒為單位
+    }
+
+    function getInteractionCount() {
+      const interactionCountInput = document.getElementById('interactionCount');
+      return parseInt(interactionCountInput.value, 10) || 0;
+    }
+    
+    //獲取互動行為
+    function getInteractionType() {
+      const checkboxes = document.querySelectorAll('input[name="interactionType"]:checked');
+      if (checkboxes.length === 0) return '';
+      
+      const selectedValues = Array.from(checkboxes).map(checkbox => checkbox.value);
+      return selectedValues.join(', ');
+    }
+    
+    //獲取備註
+    function getNotes() {
+      const notesInput = document.getElementById('notes');
+      return notesInput.value.trim();
+    }
+
+    // 生成記錄ID函數 (generateRecordId)
+    // 功能: 創建唯一的記錄標識符
+    // 參數:
+    //   - museumId: 博物館識別碼
+    //   - exhibitionHall: 展廳識別碼
+    // 返回值: 格式化的記錄ID字符串
+    // 格式: [museumId]_[exhibitionHall]_[YYYYMMDDHHmm]_[userId]_[sequence]
+    // 執行邏輯:
+    //   1. 獲取當前台灣時間
+    //   2. 格式化日期時間部分
+    //   3. 使用當前記錄數量作為序列號
+    //   4. 組合各部分返回完整ID
+    function generateRecordId(museumId, exhibitionHall) {
+      const date = new Date();
+      const userId = getUserId(); // 獲取志工編號
+      
+      // 使用台灣時區的日期時間
+      const taiwanDate = new Date(date.getTime() + (8 * 60 * 60 * 1000)); // 加8小時
+      
+      // 格式化為 YYYYMMDDHHmm
+      const year = taiwanDate.getUTCFullYear();
+      const month = String(taiwanDate.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(taiwanDate.getUTCDate()).padStart(2, '0');
+      const hours = String(taiwanDate.getUTCHours()).padStart(2, '0');
+      const minutes = String(taiwanDate.getUTCMinutes()).padStart(2, '0');
+      
+      const dateString = `${year}${month}${day}${hours}${minutes}`;
+      const sequence = String(records.length).padStart(3, '0'); // 使用當前記錄數量作為序號
+      
+      return `${museumId}_${exhibitionHall}_${dateString}_${userId}_${sequence}`;
+    }
+    
+    // 保存記錄函數 (saveRecord)
+    // 功能: 保存點位記錄到本地存儲
+    // 執行邏輯:
+    //   1. 防止重複提交，禁用保存按鈕
+    //   2. 收集所有表單數據(位置、時間、互動行為等)
+    //   3. 驗證必填字段(至少選一種互動行為)
+    //   4. 創建記錄對象並添加到records陣列
+    //   5. 保存到localStorage
+    //   6. 更新UI並顯示成功提示
+    // 異常處理: try-catch捕獲所有錯誤並顯示提示
+    // 防護措施: 按鈕狀態管理，防止重複提交
+    function saveRecord() {
+      // 防止重複提交
+      const saveBtn = document.querySelector('.save-btn');
+      if (saveBtn.disabled) {
+        console.log('防止重複提交');
+        return;
+      }
+      
+      try {
+        // 獲取按鈕原始文字
+        const originalText = saveBtn.textContent;
+        
+        // 禁用按鈕，防止重複提交
+        saveBtn.disabled = true;
+        saveBtn.textContent = '保存中...';
+        
+        const museumId = getMuseumId();
+        const exhibitionHall = getExhibitionHall();
+        const recordId = generateRecordId(museumId, exhibitionHall);
+        const userId = getUserId();
+        const pointId = document.getElementById('location').value;
+        
+        // 檢查 currentArriveTime 是否存在
+        const arriveTime = currentArriveTime ? toTaiwanISOString(currentArriveTime) : toTaiwanISOString(new Date());
+        
+        // 記錄當前時間作為離開時間
+        const leaveTime = toTaiwanISOString(new Date());
+        
+        // 計算停留秒數
+        const staySeconds = currentArriveTime ? Math.floor((new Date() - currentArriveTime) / 1000) : 0;
+        
+
+        const interactionCount = getInteractionCount();
+        const interactionType = getInteractionType();
+        const notes = getNotes();
+
+        if (!interactionType) {
+          alert('請選擇至少一種互動行為');
+          saveBtn.textContent = originalText;
+          saveBtn.disabled = false;
+          return;
+        }
+
+        // 設置當前日期和時間 - 統一使用台灣時間
+        const now = new Date();
+        const taiwanNow = new Date(now.getTime() + (8 * 60 * 60 * 1000)); // 加8小時
+        const formattedDate = taiwanNow.toISOString().split('T')[0];
+        
+        // 從 taiwanNow 獲取小時和分鐘，確保使用台灣時間
+        const hours = String(taiwanNow.getUTCHours()).padStart(2, '0');
+        const minutes = String(taiwanNow.getUTCMinutes()).padStart(2, '0');
+        
+        document.getElementById('date').value = formattedDate;
+        document.getElementById('time').value = `${hours}:${minutes}`;
+        
+        const record = {
+          id: Date.now(),
+          recordId,
+          museumId,
+          userId,
+          location: pointId,
+          date: document.getElementById('date').value,
+          time: document.getElementById('time').value,
+          arriveTime,
+          leaveTime,
+          staySeconds,
+          interactionCount,
+          interactionType,
+          notes,
+          deleted: false
+        };
+
+        // 檢查 records 是否為數組
+        if (!Array.isArray(records)) {
+          records = [];
+        }
+        records.push(record);
+        
+        // 保存到本地存儲
+        localStorage.setItem('floorplanRecords', JSON.stringify(records));
+        
+        // 恢復按鈕狀態
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+        
+        closeModal();
+        loadRecords();
+        
+        // 顯示成功消息
+        showToast('記錄已成功保存!', 2000);
+      } catch (error) {
+        console.error('保存記錄時發生錯誤:', error);
+        showToast('保存記錄時發生錯誤: ' + error.message, 3000);
+        
+        // 恢復按鈕狀態
+        const saveBtn = document.querySelector('.save-btn');
+        saveBtn.textContent = '儲存'; // 在錯誤情況下使用固定文字
+        saveBtn.disabled = false;
+      }
+    }
+    
+
+    // 加載記錄函數 (loadRecords)
+    // 功能: 從records陣列載入並顯示所有未刪除的記錄
+    // 執行邏輯:
+    //   1. 清空現有記錄列表
+    //   2. 檢查records是否為空
+    //   3. 按序號降序排序記錄
+    //   4. 遍歷並創建記錄項DOM元素
+    //   5. 添加序號、刪除按鈕等UI元素
+    // 異常處理: try-catch處理所有錯誤
+    // 排序邏輯: 使用提取序號
+    function loadRecords() {
+      try {
+      const recordsList = document.getElementById('recordsList');
+      recordsList.innerHTML = '';
+      
+        if (!records || records.length === 0) {
+          recordsList.innerHTML = '<p>目前沒有記錄</p>';
+          return;
+        }
+        
+        // 修改: 按序號降序排序，而非按日期時間
+        records.sort((a, b) => {
+          const sequenceA = parseInt(getSequenceFromRecordId(a.recordId) || "0", 10);
+          const sequenceB = parseInt(getSequenceFromRecordId(b.recordId) || "0", 10);
+          
+          return sequenceB - sequenceA;
+        });
+        
+        records.forEach(record => {
+          if (record.deleted) return; // 跳過被標記為刪除的記錄
+          
+          // 使用新函數替換
+          const sequence = getSequenceFromRecordId(record.recordId);
+          
+          const recordItem = document.createElement('div');
+          recordItem.className = 'record-item';
+          
+          // 添加相對定位，以便放置序號
+          recordItem.style.position = 'relative';
+          
+          recordItem.innerHTML = `
+            <div class="sequence-number">排序:${sequence}</div>
+            <strong>點位ID:</strong> ${record.location}<br>
+            <strong>日期時間:</strong> ${record.date} ${record.time}<br>
+            <strong>停留秒數:</strong> ${record.staySeconds} 秒<br>
+            <strong>互動行為:</strong> ${record.interactionType}<br>
+            <strong>備註:</strong> ${record.notes || '無'}
+            <button onclick="deleteRecord(${record.id})" style="float: right; background-color: #e74c3c; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">刪除</button>
+          `;
+          
+          recordsList.appendChild(recordItem);
+        });
+      } catch (error) {
+        console.error('加載記錄時發生錯誤:', error);
+        document.getElementById('recordsList').innerHTML = '<p>加載記錄時發生錯誤</p>';
+      }
+    }
+    
+    // 刪除記錄函數 (deleteRecord)
+    // 功能: 標記特定記錄為已刪除
+    // 參數: id - 記錄的唯一標識符
+    // 執行邏輯:
+    //   1. 詢問用戶確認刪除意圖
+    //   2. 查找指定ID的記錄
+    //   3. 標記記錄的deleted屬性為true
+    //   4. 更新localStorage
+    //   5. 重新加載記錄列表
+    // 異常處理: try-catch捕獲並顯示錯誤
+    // 備註: 採用軟刪除策略，便於後續恢復
+    function deleteRecord(id) {
+      if (confirm('確定要標記這條記錄為刪除嗎？')) {
+        try {
+          // 找到記錄並標記為刪除，而不是真正刪除
+          const recordIndex = records.findIndex(record => record.id === id);
+          if (recordIndex !== -1) {
+            records[recordIndex].deleted = true;
+        localStorage.setItem('floorplanRecords', JSON.stringify(records));
+        loadRecords();
+      }
+        } 
+        catch (error) {
+          console.error('刪除記錄時發生錯誤:', error);
+          showToast('刪除記錄時發生錯誤: ' + error.message, 3000);
+        }
+      }}
+
+    // 重置記錄函數 (resetRecording)
+    // 功能: 完全重置應用狀態，清除所有數據
+    // 執行邏輯:
+    //   1. 刪除所有localStorage項目
+    //   2. 重置records陣列
+    //   3. 清空記錄列表顯示
+    //   4. 清除路線圖(如果有)
+    //   5. 停止並重置所有計時器
+    //   6. 重置表單狀態
+    //   7. 顯示成功重置提示
+    // 關聯函數: resetVisitorForm(),
+    function resetRecording() {
+      // 刪除所有緩存資料
+      localStorage.removeItem('floorplanRecords');
+      localStorage.removeItem('visitorInfo');
+      localStorage.removeItem('failedSubmission');
+      
+      // 重置記錄數組
+      records = [];
+      loadRecords();
+      // 停止並重置計時器
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      document.getElementById('timer').textContent = '00:00:00';
+      
+      // 隱藏點位計時器
+      document.getElementById('pointTimer').style.display = 'none';
+      currentArriveTime = null;
+      
+      // 重置基本資料收集表單
+      resetVisitorForm();
+      
+      // 隱藏任何可能存在的 toast 提示
+      const toast = document.getElementById('toast');
+      if (toast) {
+        toast.style.display = 'none';
+      }
+      
+      // 提供反饋
+      showToast('已開始新記錄，所有數據已重置', 3000);
+      
+      startTime = null; // 明確重置 startTime
+    }
+
+    // 重置訪客表單函數 (resetVisitorForm)
+    // 功能: 重置訪客基本資料收集表單的所有字段
+    // 執行邏輯:
+    //   1. 清除性別單選框選擇
+    //   2. 重置年齡、教育程度、居住地下拉選單
+    //   3. 清除參觀目的複選框選擇
+    //   4. 清除參觀頻率單選框選擇
+    //   5. 重置隱藏欄位(visitorId, formRecordId等)
+    // 調用時機: 重置記錄或開始新的記錄時
+    function resetVisitorForm() {
+      // 重置性別單選框
+      const genderRadios = document.querySelectorAll('input[name="gender"]');
+      genderRadios.forEach(radio => {
+        radio.checked = false;
+      });
+      
+      // 重置年齡、教育、居住地下拉選單
+      document.getElementById('ageGroup').value = '';
+      document.getElementById('education').value = '';
+      document.getElementById('residence').value = '';
+      
+      // 重置參觀目的複選框
+      const purposeCheckboxes = document.querySelectorAll('input[name="visitPurpose"]');
+      purposeCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      
+      // 重置參觀頻率單選框
+      const frequencyRadios = document.querySelectorAll('input[name="visitFrequency"]');
+      frequencyRadios.forEach(radio => {
+        radio.checked = false;
+      });
+      
+      // 重置隱藏欄位
+      document.getElementById('visitorId').value = '';
+      document.getElementById('formRecordId').value = '';
+      document.getElementById('totalSeconds').value = '';
+    }
+
+    // 初始化日期為今天
+    document.addEventListener('DOMContentLoaded', function() {
+      /*
+        // 確保 toast 元素存在
+      if (!document.getElementById('toast')) {
+        const toastElement = document.createElement('div');
+        toastElement.id = 'toast';
+        toastElement.style.display = 'none';
+        toastElement.style.position = 'fixed';
+        toastElement.style.top = '20px';
+        toastElement.style.left = '50%';
+        toastElement.style.transform = 'translateX(-50%)';
+        toastElement.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        toastElement.style.color = 'white';
+        toastElement.style.padding = '10px 20px';
+        toastElement.style.borderRadius = '5px';
+        toastElement.style.zIndex = '9999';
+        document.body.appendChild(toastElement);
+      } 
+      */
+      // 初始化記錄
+      initialize();
+      
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('date').value = formattedDate;
+      
+      // 設置現在的時間
+      const hours = String(today.getHours()).padStart(2, '0');
+      const minutes = String(today.getMinutes()).padStart(2, '0');
+      document.getElementById('time').value = `${hours}:${minutes}`;
+      
+
+
+      // 設置點位顏色
+      document.querySelectorAll('.hotspot').forEach(hotspot => {
+        const location = hotspot.getAttribute('data-location');
+        if (!location) return;
+        
+        // 根據首位數字添加對應的顏色類別
+        const firstDigit = location.split('-')[0];
+        if (firstDigit === '1') {
+          hotspot.classList.add('hotspot-group-1');
+        } else if (firstDigit === '2') {
+          hotspot.classList.add('hotspot-group-2');
+        } else if (firstDigit === '3') {
+          hotspot.classList.add('hotspot-group-3');
+        } else if (firstDigit === '4') {
+          hotspot.classList.add('hotspot-group-4');
+        } else if (firstDigit === '5') {
+          hotspot.classList.add('hotspot-group-5');
+        } else if (firstDigit === '6') {
+          hotspot.classList.add('hotspot-group-6');
+        }
+        
+        // 添加點擊事  打開記錄表單
+        hotspot.addEventListener('click', function() {
+          if (!timerInterval) {
+            startTimer();
+          }
+          openModal(this.getAttribute('data-location'));
+        });
+      });
+      
+      // 替換為以下代碼:
+      const container = document.querySelector('.container');
+      
+      // 創建按鈕容器
+      const buttonsContainer = document.createElement('div');
+      buttonsContainer.style.display = 'flex';
+      buttonsContainer.style.justifyContent = 'center';
+      buttonsContainer.style.gap = '20px';
+      buttonsContainer.style.margin = '20px auto';
+      
+      // 開始新記錄按鈕
+      const newRecordButton = document.createElement('button');
+      newRecordButton.textContent = '開始新記錄';
+      newRecordButton.className = 'end-btn';
+      newRecordButton.style.backgroundColor = '#27ae60'; // 綠色
+      newRecordButton.style.color = 'white';
+      newRecordButton.style.padding = '10px 20px';
+      newRecordButton.style.borderRadius = '4px';
+      newRecordButton.style.border = 'none';
+      newRecordButton.style.cursor = 'pointer';
+      newRecordButton.style.fontWeight = 'bold';
+      
+      // 結束記錄按鈕
+      const endButton = document.createElement('button');
+      endButton.textContent = '結束記錄';
+      endButton.className = 'end-btn';
+      endButton.style.backgroundColor = '#3498db'; // 藍色
+      endButton.style.color = 'white';
+      endButton.style.padding = '10px 20px';
+      endButton.style.borderRadius = '4px';
+      endButton.style.border = 'none';
+      endButton.style.cursor = 'pointer';
+      endButton.style.fontWeight = 'bold';
+      
+      // 將按鈕添加到容器中
+      buttonsContainer.appendChild(newRecordButton);
+      buttonsContainer.appendChild(endButton);
+      container.appendChild(buttonsContainer);
+      
+      // 綁定開始新記錄按鈕事件
+      newRecordButton.onclick = function() {
+        if (confirm('確定要開始新的記錄嗎？這將清除當前記錄和路線圖。')) {
+          resetRecording();
+        }
+      };
+      
+      // 確保其他代碼引用 endButton 的地方仍然有效
+      // 保留原有的結束記錄按鈕的點擊事件
+      endButton.onclick = function() {
+        if (confirm('確定要結束記錄嗎？這將停止計時器並準備提交數據。')) {
+          // 從計時器獲取總時間
+          const timerText = document.getElementById('timer').textContent;
+          const [hours, minutes, seconds] = timerText.split(':').map(Number);
+          const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+          
+          // 將總時間保存到隱藏表單字段
+          document.getElementById('totalSeconds').value = totalSeconds;
+          
+          // 停止計時器但不重置顯示
+          clearInterval(timerInterval);
+          timerInterval = null;
+          
+          // 獲取總時間並保存到visitorFormData
+          // 使用上方已計算的總秒數，避免重複宣告變數
+          document.getElementById('totalSeconds').value = totalSeconds;
+          
+          // 顯示遮罩和授權書
+          document.getElementById('endRecordOverlay').style.display = 'block';
+          document.getElementById('consentModal').style.display = 'flex';
+        }
+      };
+
+      // 不同意按鈕點擊事件
+      document.getElementById('disagreeBtn').addEventListener('click', function() {
+        if (confirm('您確定不同意資料蒐集嗎？所有記錄將被刪除。')) {
+          resetRecording(); // 使用共用的 resetRecording 函數
+          
+          // 關閉模態窗和遮罩
+          document.getElementById('consentModal').style.display = 'none';
+          document.getElementById('endRecordOverlay').style.display = 'none';
+          
+          showToast('您已選擇不同意，所有記錄已刪除。', 3000);
+          
+          // 滾動到頂部
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      // 同意按鈕點擊事件
+      document.getElementById('agreeBtn').addEventListener('click', function() {
+        // 關閉授權書模態窗
+        document.getElementById('consentModal').style.display = 'none';
+        
+        // 顯示基本資料收集表單
+        document.getElementById('visitorInfoModal').style.display = 'flex';
+        
+        // 預先填入recordId
+        const museumId = getMuseumId();
+        const exhibitionHall = getExhibitionHall();
+        const userId = getUserId(); // 獲取志工編號
+        const today = new Date();
+        const taiwanToday = new Date(today.getTime() + (8 * 60 * 60 * 1000)); // 加8小時
+        const year = taiwanToday.getUTCFullYear();
+        const month = String(taiwanToday.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(taiwanToday.getUTCDate()).padStart(2, '0');
+        const hours = String(taiwanToday.getUTCHours()).padStart(2, '0');
+        const minutes = String(taiwanToday.getUTCMinutes()).padStart(2, '0');
+        const milliseconds = String(taiwanToday.getUTCMilliseconds()).padStart(3, '0');
+
+        // 修改 dateString 以包含時間
+        const dateString = `${year}${month}${day}${hours}${minutes}`;
+        // 添加毫秒作為序列號的一部分，確保唯一性
+        const sequence = milliseconds;
+        const recordId = `${museumId}_${exhibitionHall}_${dateString}_${userId}_${sequence}`;
+        document.getElementById('formRecordId').value = recordId;
+      });
+
+      // 表單提交事件
+      document.getElementById('visitorInfoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // 驗證表單
+        const gender = document.querySelector('input[name="gender"]:checked');
+        const ageGroup = document.getElementById('ageGroup').value;
+        const education = document.getElementById('education').value;
+        const residence = document.getElementById('residence').value;
+        const visitPurpose = Array.from(document.querySelectorAll('input[name="visitPurpose"]:checked')).map(cb => cb.value);
+        const visitFrequency = document.querySelector('input[name="visitFrequency"]:checked');
+        
+        if (!gender || !ageGroup || !education || !residence || visitPurpose.length === 0 || !visitFrequency) {
+          showToast('請填寫所有必填欄位', 2000);
+          return;
+        }
+        
+        // 生成visitorId (格式:性別+ageGroup+education+residence+四位數亂碼)
+        const genderCode = gender.dataset.code;
+        const ageCode = document.querySelector(`#ageGroup option[value="${ageGroup}"]`).dataset.code;
+        const eduCode = document.querySelector(`#education option[value="${education}"]`).dataset.code;
+        const resCode = document.querySelector(`#residence option[value="${residence}"]`).dataset.code;
+        const randomCode = Math.floor(1000 + Math.random() * 9000); // 四位數亂碼
+        const visitorId = `${genderCode}_${ageCode}_${eduCode}_${resCode}_ ${randomCode}`;
+        document.getElementById('visitorId').value = visitorId;
+        
+        // 收集表單數據
+        const formData = new FormData(this);
+        const visitorData = {};
+        formData.forEach((value, key) => {
+          visitorData[key] = value;
+        });
+        
+        // 將visitPurpose轉為字符串
+        visitorData.visitPurpose = visitPurpose.join(', ');
+        
+        // 儲存數據
+        localStorage.setItem('visitorInfo', JSON.stringify(visitorData));
+        
+        // 關閉模態窗和遮罩
+        document.getElementById('visitorInfoModal').style.display = 'none';
+        document.getElementById('endRecordOverlay').style.display = 'none';
+        
+        
+        // 滾動到平面圖位置
+        setTimeout(() => {
+          const floorplanContainer = document.querySelector('.floorplan-container') || document.getElementById('floorplan');
+          floorplanContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+        
+        // 直接發送數據，不再通過路線圖管理器
+        showToast('數據發送中...', 3000);
+        sendDataToGoogleSheet();
+      });
+
+      // 檢查失敗的提交
+      checkFailedSubmissions();
+       
+      // 為儲存按鈕添加事件監聽器
+      const saveBtn = document.querySelector('.save-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', saveRecord);
+        console.log('儲存按鈕事件已綁定');
+      } else {
+        console.error('無法找到儲存按鈕');
+      }
+    });
+
+    // 發送數據到 Google Sheet
+    function sendDataToGoogleSheet() {
+      try {
+        console.log('準備發送數據到 Google Sheet...');
+        
+        // 檢查是否有失敗的提交需要重試
+        checkFailedSubmissions();
+        
+        // 顯示載入中提示
+        showToast('正在提交數據，請稍候...', 5000);
+        
+        // 獲取記錄和訪客數據
+        const allRecords = JSON.parse(localStorage.getItem('floorplanRecords') || '[]');
+        const records = allRecords.filter(record => !record.deleted); // 過濾掉被標記為刪除的記錄
+        const visitorInfo = JSON.parse(localStorage.getItem('visitorInfo') || '{}');
+        
+        // 構建請求數據
+        const data = {
+          records: records,
+          visitorInfo: visitorInfo
+        };
+        
+        // 重置重試計數
+        retryCount = 0;
+        
+        // 發送數據
+        google.script.run
+          .withSuccessHandler(function(response) {
+            console.log('數據發送成功:', response);
+            showToast('數據已成功提交！', 3000);
+            
+            // 清除本地存儲但保留路線圖
+            localStorage.removeItem('floorplanRecords');
+            localStorage.removeItem('visitorInfo');
+            localStorage.removeItem('failedSubmission');
+            
+            // 重置記錄數組但不清除路線圖
+            records = [];
+            loadRecords();
+            
+            // 清空記錄列表區域
+            const recordsContainer = document.getElementById('recordsList');
+            if (recordsContainer) {
+              recordsContainer.innerHTML = '<p>目前沒有記錄。</p>';
+            }
+            
+            // 滾動到平面圖位置
+            const floorplanContainer = document.querySelector('.floorplan-container') || document.getElementById('floorplan');
+            floorplanContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // 計時器狀態重置
+            if (timerInterval) {
+              clearInterval(timerInterval);
+              timerInterval = null;
+            }
+            document.getElementById('timer').textContent = '00:00:00';
+            document.getElementById('pointTimer').style.display = 'none';
+            currentArriveTime = null;
+            
+            // 先顯示成功提示
+            showToast('數據已成功提交！', 2000);
+            
+            // 等待上一個提示消失後，再顯示下一個提示
+            setTimeout(function() {
+              showToast("按下開始新記錄，以進行下一筆記錄", 10000);
+            }, 2500);
+          })
+          .withFailureHandler(function(error) {
+            console.error('數據發送失敗:', error);
+            showToast('數據提交失敗，請稍後再試: ' + error, 5000);
+            
+            setTimeout(function() {
+              showToast("按下開始新記錄，以進行下一筆記錄", 10000);
+            }, 5000);
+            
+            // 保存失敗的數據到本地，以便稍後重試
+            localStorage.setItem('failedSubmission', JSON.stringify({
+              data: data,
+              timestamp: new Date().toISOString()
+            }));
+          })
+          .saveData(data); // 呼叫 Code.gs 中的 saveData 函數
+      } catch (error) {
+        console.error('發送數據到 Google Sheet 時發生錯誤:', error);
+        showToast('發送數據到 Google Sheet 時發生錯誤: ' + error.message, 5000);
+        setTimeout(function() {
+              showToast("按下開始新記錄，以進行下一筆記錄", 10000);
+            }, 5000);
+      }
+    }
+
+    // 定義全局變量
+    let toastQueue = [];
+    let isShowingToast = false;
+
+    // 修改後的 showToast 函數
+    function showToast(message, duration) {
+      // 將新的提示添加到隊列
+      toastQueue.push({ message, duration });
+      
+      // 如果當前沒有提示在顯示，則開始顯示
+      if (!isShowingToast) {
+        processToastQueue();
+      }
+    }
+
+    /**
+     * 處理 Toast 消息隊列函數 (processToastQueue)
+     * 功能: 依序處理並顯示消息隊列中的提示
+     * 執行邏輯:
+     *   1. 檢查隊列是否為空，若空則重置狀態
+     *   2. 設置標記為正在顯示消息
+     *   3. 從隊列中取出首個消息並顯示
+     *   4. 設置定時器在指定時間後隱藏消息
+     *   5. 添加短暫延遲後處理下一條消息
+     * 相關變量:
+     *   - toastQueue: 全局消息隊列陣列
+     *   - isShowingToast: 是否正在顯示消息的標記
+     * 調用時機:
+     *   - 由showToast調用(當隊列為空時)
+     *   - 遞迴調用自身處理下一條消息
+     * 備註:
+     *   - 在消息顯示結束和處理下一條消息之間添加300ms延遲
+     *   - 該延遲確保用戶能清晰區分不同的消息
+     */
+    function processToastQueue() {
+      // 如果隊列為空，則設置標記為無提示顯示
+      if (toastQueue.length === 0) {
+        isShowingToast = false;
+        return;
+      }
+      
+      // 設置標記為正在顯示提示
+      isShowingToast = true;
+      
+      // 獲取隊列中的第一個提示
+      const { message, duration } = toastQueue.shift();
+      
+      // 顯示提示
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      
+      // 設置定時器，等待提示顯示結束後繼續處理隊列
+      setTimeout(() => {
+        toast.style.display = 'none';
+        
+        // 等待一小段時間再顯示下一個提示，以便用戶能夠區分不同的提示
+        setTimeout(() => {
+          processToastQueue();
+        }, 300);
+      }, duration);
+    }
+    /**
+ * 檢查失敗提交函數 (checkFailedSubmissions)
+ * 功能: 檢查是否有失敗的提交需要重試
+ * 返回值: 布林值，指示是否處理了失敗提交
+ * 執行邏輯:
+ *   1. 檢查localStorage中是否有failedSubmission
+ *   2. 解析先前保存的提交數據
+ *   3. 計算失敗時間是否在24小時內
+ *   4. 詢問用戶是否重試提交
+ *   5. 根據用戶選擇執行相應操作
+ * 異常處理: try-catch處理JSON解析和其他錯誤
+ * 時效性: 自動清除超過24小時的失敗提交
+ */
+    function checkFailedSubmissions() {
+      const failedSubmission = localStorage.getItem('failedSubmission');
+      
+      if (failedSubmission) {
+        try {
+          const submission = JSON.parse(failedSubmission);
+          const timestamp = new Date(submission.timestamp);
+          const now = new Date();
+          
+          // 如果失敗提交不超過24小時，詢問用戶是否重試
+          if ((now - timestamp) < 24 * 60 * 60 * 1000) {
+            if (confirm('發現上次未成功提交的數據，是否重新提交？')) {
+              showToast('正在重新提交先前的數據...', 3000);
+              sendDataToGoogleSheet();
+              // 不立即刪除failedSubmission，等成功後再刪除
+            } else {
+              // 用戶選擇不重試，清除失敗提交記錄
+              localStorage.removeItem('failedSubmission');
+            }
+            return true; // 表示處理了失敗提交
+          } else {
+            // 超過24小時的失敗提交，自動清除
+            localStorage.removeItem('failedSubmission');
+          }
+        } catch (e) {
+          console.error('處理失敗提交時出錯:', e);
+          localStorage.removeItem('failedSubmission');
+        }
+      }
+      return false; // 表示沒有處理失敗提交
+    }
+
+    /**
+     * 從記錄ID提取序列號函數 (getSequenceFromRecordId)
+     * 功能: 從記錄ID字串中提取序列號部分
+     * 參數: recordId - 完整記錄ID字符串
+     * 返回值: 序列號字符串，如無法提取則返回"999"
+     * 執行邏輯:
+     *   1. 驗證recordId是否為有效字符串
+     *   2. 以下劃線分割ID字符串
+     *   3. 提取第5個部分(index 4)作為序列號
+     *   4. 處理異常情況，提供默認值
+     */
+    function getSequenceFromRecordId(recordId) {
+      // 檢查recordId是否存在且為字符串
+      if (!recordId || typeof recordId !== 'string') {
+        return '999';
+      }
+      
+      // 嘗試提取序列號 - 第5個部分
+      const parts = recordId.split('_');
+      if (parts.length >= 5) {
+        return parts[4]; // 從0開始索引，第5個部分是索引4
+      }
+      
+      // 如果無法提取，返回默認值
+      return '998';
+    }
+  </script>
+</body>
+</html>

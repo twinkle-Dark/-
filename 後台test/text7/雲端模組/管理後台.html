@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <!-- 基本設置：字符編碼和視口設置 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="博物館觀眾行為調查系統管理後台">
+    <title>博物館觀眾行為調查系統 - 管理後台</title>
+    
+    <!-- 外部CSS引入 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+            --primary-color: #2C3E50;      /* 深藍色主色調 */
+            --secondary-color: #34495E;     /* 次要藍色 */
+            --accent-color: #E67E22;        /* 強調橙色 */
+            --background-light: #ECF0F1;    /* 淺灰背景 */
+            --text-primary: #2C3E50;        /* 主要文字顏色 */
+            --text-secondary: #7F8C8D;      /* 次要文字顏色 */
+            --text-light: #ffffff;          /* 淺色文字 */
+            --success-color: #27AE60;       /* 成功綠色 */
+            --warning-color: #F1C40F;       /* 警告黃色 */
+            --danger-color: #E74C3C;        /* 危險紅色 */
+            --selection-bg: #E67E22;        /* 文字選取背景色 */
+            --selection-color: #ffffff;      /* 文字選取前景色 */
+            --navbar-text: #ffffff;         /* 導航欄文字顏色 */
+            --navbar-text-hover: #ECF0F1;   /* 導航欄文字懸停顏色 */
+        }
+
+        /* 文字選取樣式 */
+        ::selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+            text-shadow: none;
+        }
+
+        ::-moz-selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+            text-shadow: none;
+        }
+
+        /* 表格文字選取樣式 */
+        .table tbody td::selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+        }
+
+        .table tbody td::-moz-selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+        }
+
+        /* 卡片文字選取樣式 */
+        .card-body ::selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+        }
+
+        .card-body ::-moz-selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+        }
+
+        /* 側邊欄文字選取樣式 */
+        .nav-pills .nav-link::selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+        }
+
+        .nav-pills .nav-link::-moz-selection {
+            background-color: var(--selection-bg);
+            color: var(--selection-color);
+        }
+
+        /* 全局樣式 */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--background-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 導航欄樣式 */
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            color: var(--navbar-text) !important;
+            font-weight: 700;
+            font-size: 1.25rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-dark .navbar-nav .nav-link {
+            color: var(--navbar-text) !important;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: var(--navbar-text-hover) !important;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        /* 用戶信息樣式 */
+        .navbar .text-light {
+            color: var(--navbar-text) !important;
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* 登出按鈕樣式 */
+        .btn-outline-light {
+            color: var(--navbar-text);
+            border-color: var(--navbar-text);
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--navbar-text-hover);
+            border-color: var(--navbar-text-hover);
+        }
+
+        /* 主要內容布局 */
+        .main-container {
+            flex: 1;
+            display: flex;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        /* 側邊欄樣式 */
+        .sidebar {
+            background-color: white;
+            min-height: calc(100vh - 56px);
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 280px;
+            flex-shrink: 0;
+        }
+
+        .nav-pills .nav-link {
+            color: var(--primary-color);
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-pills .nav-link i {
+            font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+
+        .nav-pills .nav-link:hover {
+            background-color: var(--background-light);
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 內容區域樣式 */
+        .content-area {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .content-header h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 數據卡片樣式 */
+        .dashboard-card {
+            background: linear-gradient(135deg, white, var(--background-light));
+            border-radius: 8px;
+            padding: 1.5rem;
+            height: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .dashboard-card .card-title {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-card .card-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        /* 表格樣式 */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .table thead th {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            font-weight: 500;
+            padding: 1rem;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: var(--background-light);
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn i {
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        /* 拖曳卡片設計 */
+        .draggable-card {
+            cursor: move;
+            transition: box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .draggable-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .drag-handle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .draggable-card:hover .drag-handle {
+            opacity: 1;
+        }
+
+        /* 時間區間選擇器 */
+        .time-range-selector {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .time-range-selector .btn {
+            min-width: 60px;
+        }
+
+        /* 自動生成ID預覽 */
+        .id-preview {
+            background: var(--background-light);
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-family: monospace;
+            color: var(--secondary-color);
+        }
+
+        /* 載入指示器 */
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+
+            .content-area {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-card .card-text {
+                font-size: 1.5rem;
+            }
+
+            .content-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .table-responsive {
+                margin: 0 -1rem;
+            }
+        }
+
+        /* 底部導航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: 0.75rem;
+            z-index: 1000;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+
+        .bottom-nav .btn {
+            width: 48%;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 取得資料 -->
+    <? var dataM = getDataMuseums(); ?>
+    <? var dataU = getDataUser(); ?>
+    <? var dataF = getDataForm(); ?>
+    <? var data = getData(); ?>
+    <? var dataVInfo = getDataVInfo(); ?>
+    <? var dataVInteractions = getDataVInteractions(); ?>
+
+    <!-- 導航欄 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-building"></i>
+                博物館觀眾行為調查平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" id="frontendLink" role="button">  
+                            <i class="bi bi-display"></i>
+                            前台展示
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="openRecord()" role="button">
+                            <i class="bi bi-pencil-square"></i>
+                            記錄介面
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- 用戶信息和登出按鈕 -->
+                <div class="d-flex align-items-center">
+                    <span class="text-light me-3 d-none d-sm-block">
+                        <i class="bi bi-person-circle"></i>
+                        管理員：<span id="userName">使用者名稱</span>
+                    </span>
+                    <button class="btn btn-outline-light" onclick="handleSignout()">
+                        <i class="bi bi-box-arrow-right"></i>
+                        登出
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容區域 -->
+    <div class="main-container">
+        <!-- 側邊欄 -->
+        <div class="sidebar">
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist">
+                <a class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" href="#dashboard" role="tab" aria-controls="dashboard" aria-selected="true">
+                    <i class="bi bi-speedometer2"></i>
+                    儀表板
+                </a>
+                <a class="nav-link" id="museums-tab" data-bs-toggle="pill" href="#museums" role="tab" aria-controls="museums" aria-selected="false">
+                    <i class="bi bi-building"></i>
+                    博物館管理
+                </a>
+                <a class="nav-link" id="users-tab" data-bs-toggle="pill" href="#users" role="tab" aria-controls="users" aria-selected="false">
+                    <i class="bi bi-people"></i>
+                    用戶管理
+                </a>
+                <a class="nav-link" id="forms-tab" data-bs-toggle="pill" href="#forms" role="tab" aria-controls="forms" aria-selected="false">
+                    <i class="bi bi-file-text"></i>
+                    表單管理
+                </a>
+                <a class="nav-link" id="data-tab" data-bs-toggle="pill" href="#data" role="tab" aria-controls="data" aria-selected="false">
+                    <i class="bi bi-database"></i>
+                    資料管理
+                </a>
+                <a class="nav-link" id="reports-tab" data-bs-toggle="pill" href="#reports" role="tab" aria-controls="reports" aria-selected="false">
+                    <i class="bi bi-graph-up"></i>
+                    報表管理
+                </a>
+                <a class="nav-link" id="settings-tab" data-bs-toggle="pill" href="#settings" role="tab" aria-controls="settings" aria-selected="false">
+                    <i class="bi bi-gear"></i>
+                    系統設置
+                </a>
+                <a class="nav-link" id="ai-assistant-tab" data-bs-toggle="pill" href="#ai-assistant" role="tab" aria-controls="ai-assistant" aria-selected="false">
+                    <i class="bi bi-robot"></i>
+                    AI助手
+                </a>
+            </div>
+        </div>
+
+        <!-- 內容區域 -->
+        <div class="content-area">
+            <div class="tab-content" id="v-pills-tabContent">
+                <!-- 儀表板 -->
+                <div class="tab-pane fade show active dashboard-module" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-speedometer2"></i> 儀表板</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" id="exportDashboardBtn">
+                                <i class="bi bi-download"></i> 匯出報表
+                            </button>
+                            <button class="btn btn-outline-primary" id="refreshDashboardBtn">
+                                <i class="bi bi-arrow-clockwise"></i> 重新整理
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 時間區間選擇器 -->
+                    <div class="time-range-selector mb-4" id="timeRangeSelector">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary active" data-range="day">日</button>
+                            <button class="btn btn-outline-primary" data-range="week">週</button>
+                            <button class="btn btn-outline-primary" data-range="month">月</button>
+                        </div>
+                    </div>
+
+                    <!-- 數據卡片 -->
+                    <div class="row g-3 mb-4" id="dashboard-cards-container">
+                        <div class="col-md-3">
+                            <div class="dashboard-card draggable-card" data-card-id="visitorCount">
+                                <div class="drag-handle"><i class="bi bi-grip-horizontal"></i></div>
+                                <h5 class="card-title"><i class="bi bi-person"></i> 訪客數量</h5>
+                                <p class="card-text" id="visitorCountCard">0</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dashboard-card draggable-card" data-card-id="volunteerCount">
+                                <div class="drag-handle"><i class="bi bi-grip-horizontal"></i></div>
+                                <h5 class="card-title"><i class="bi bi-people"></i> 志工數量</h5>
+                                <p class="card-text" id="volunteerCountCard">0</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dashboard-card draggable-card" data-card-id="recordCount">
+                                <div class="drag-handle"><i class="bi bi-grip-horizontal"></i></div>
+                                <h5 class="card-title"><i class="bi bi-calendar3"></i> 記錄數量</h5>
+                                <p class="card-text" id="recordCountCard">0</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="dashboard-card draggable-card" data-card-id="avgStayTime">
+                                <div class="drag-handle"><i class="bi bi-grip-horizontal"></i></div>
+                                <h5 class="card-title"><i class="bi bi-clock"></i> 平均停留時間</h5>
+                                <p class="card-text" id="avgStayTimeCard">0:00</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 圖表區域 -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="bi bi-graph-up"></i> 訪客趨勢</h5>
+                                    <div class="chart-container">
+                                        <canvas id="visitorTrendChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="bi bi-geo-alt"></i> 熱門展區</h5>
+                                    <div class="chart-container">
+                                        <canvas id="popularAreasChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 博物館管理頁面 -->
+                <div class="tab-pane fade" id="museums" role="tabpanel" aria-labelledby="museums-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-building"></i> 博物館管理</h2>
+                        <button class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> 新增博物館
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>博物館ID</th>
+                                            <th>所屬博物館</th>
+                                            <th>展廳ID</th>
+                                            <th>展廳名</th>
+                                            <th>廳別</th>
+                                            <th>描述</th>
+                                            <th>平面圖</th>
+                                            <th>地址</th>
+                                            <th>聯絡資訊</th>
+                                            <th>狀態</th>
+                                            <th>備註</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 表格內容由JS動態生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="museum-pagination" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 用戶管理頁面 -->
+                <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-people"></i> 用戶管理</h2>
+                        <button class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> 新增用戶
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- 篩選功能 -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <select id="roleFilter" class="form-select">
+                                        <option value="">所有角色</option>
+                                        <option value="00">一般使用者</option>
+                                        <option value="01">管理員</option>
+                                        <option value="02">開發人員</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select id="statusFilter" class="form-select">
+                                        <option value="">所有狀態</option>
+                                        <option value="一般">一般</option>
+                                        <option value="暫停">暫停</option>
+                                        <option value="移除">移除</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" id="keywordFilter" class="form-control" placeholder="關鍵字搜尋...">
+                                </div>
+                                <div class="col-md-2">
+                                    <button id="applyUserFilter" class="btn btn-primary w-100">
+                                        <i class="bi bi-search"></i> 搜尋
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>用戶ID</th>
+                                            <th>電子郵件</th>
+                                            <th>姓名</th>
+                                            <th>角色</th>
+                                            <th>創建日期</th>
+                                            <th>最後登入</th>
+                                            <th>所屬博物館</th>
+                                            <th>狀態</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 表格內容由JS動態生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 表單管理頁面 -->
+                <div class="tab-pane fade" id="forms" role="tabpanel" aria-labelledby="forms-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-file-text"></i> 表單管理</h2>
+                        <button class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> 新增表單
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>表單名稱</th>
+                                            <th>表單類型</th>
+                                            <th>版本</th>
+                                            <th>使用中</th>
+                                            <th>創建日期</th>
+                                            <th>最後修改日期</th>
+                                            <th>創建者</th>
+                                            <th>描述</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 表格內容由JS動態生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他頁面 -->
+                <div class="tab-pane fade" id="data" role="tabpanel" aria-labelledby="data-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-database"></i> 資料管理</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>數據查詢與匯出</h3>
+                            <p>此功能正在開發中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-graph-up"></i> 報表管理</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>統計報表生成</h3>
+                            <p>此功能正在開發中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-gear"></i> 系統設置</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>系統參數配置</h3>
+                            <p>此功能正在開發中...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="ai-assistant" role="tabpanel" aria-labelledby="ai-assistant-tab">
+                    <div class="content-header">
+                        <h2><i class="bi bi-robot"></i> AI助手</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>智能分析與建議</h3>
+                            <p>此功能正在開發中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小螢幕底部導航 -->
+    <div class="d-block d-lg-none bottom-nav">
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-outline-light" id="frontendLinkMobile">
+                <i class="bi bi-display"></i>
+                前台展示
+            </button>
+            <button class="btn btn-outline-light" onclick="openRecord()">
+                <i class="bi bi-pencil-square"></i>
+                記錄介面
+            </button>
+        </div>
+    </div>
+
+    <!-- 載入Chart.js庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    
+    <!-- 載入Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 環境變數與全局函數 -->
+    <script>
+        // 前台展示網址
+        const frontendUrl = "https://script.google.com/macros/s/AKfycbwG-PX650sE2V0xbtAr-0zZGw3DGWL5X_2XIY9zKuQQbjfGqiXJONohEqx_H1pFjsnRpg/exec";
+        
+        // 輔助函數
+        function openRecord() {
+            alert('記錄介面功能尚未實現');
+        }
+        
+        function handleSignout() {
+            alert('登出功能尚未實現');
+        }
+    </script>
+    <!-- 初始化全局App對象 -->
+    <script>
+        // 全局命名空間
+        window.App = window.App || {};
+         console.log('全局App對象已建立');
+    </script>
+            <script src="modules/dashboardModule.html"></script>
+        <script src="modules/museumModule.html"></script>
+        <script src="modules/userModule.html"></script>
+    </script>
+        <!-- 引入模組文件 -->
+
+             <!-- 在GAS環境中引入模組 -->
+          <?!= include('dashboardModule'); ?>
+          <?!= include('museumModule'); ?>
+          <?!= include('userModule'); ?>
+          <script>
+    </script>
+    
+    <!-- 初始化模組 -->
+    <script>
+        // 等待DOM載入完成
+        document.addEventListener('DOMContentLoaded', function() {
+            // 綁定前台展示按鈕事件
+            document.getElementById("frontendLink").addEventListener("click", function() {
+                window.open(frontendUrl, "_blank");
+            });
+            
+            // 綁定移動端前台展示按鈕
+            const mobileFrontendLink = document.getElementById("frontendLinkMobile");
+            if (mobileFrontendLink) {
+                mobileFrontendLink.addEventListener("click", function() {
+                    window.open(frontendUrl, "_blank");
+                });
+            }
+            
+            // 顯示用戶名稱
+            const userNameElement = document.getElementById("userName");
+            if (userNameElement) {
+                userNameElement.textContent = "測試用戶";
+            }
+            
+            // 初始化儀表板模組
+            if (App.dashboardModule) {
+                console.log('✓ 儀表板模組已成功載入');
+                App.dashboardModule.init();
+            } else {
+                console.error('✗ 儀表板模組載入失敗');
+            }
+            
+            // 初始化博物館管理模組
+            if (App.museumModule) {
+                console.log('✓ 博物館模組已成功載入');
+                App.museumModule.init();
+            } else {
+                console.error('✗ 博物館模組載入失敗');
+            }
+            
+            // 初始化用戶管理模組
+            if (App.userModule) {
+                console.log('✓ 用戶模組已成功載入');
+                App.userModule.init();
+            } else {
+                console.error('✗ 用戶模組載入失敗');
+            }
+            
+            // 顯示環境信息
+            if (typeof google === 'undefined') {
+                console.log('運行在測試環境中，使用模擬數據');
+                document.querySelector('.navbar-brand').innerHTML += ' <span class="badge bg-info">測試環境</span>';
+            } else {
+                console.log('運行在 Google Apps Script 環境中');
+            }
+        });
+    </script>
+</body>
+</html> 

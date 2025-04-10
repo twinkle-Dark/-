@@ -1,0 +1,717 @@
+# 結構
+初始化
+事件監聽(塞選)
+    -博物館
+    -時間
+匯入資料
+    - 訪客
+    - 紀錄
+過濾器篩選資料
+進行統計
+    - 訪客數量
+    - 紀錄數量
+    - 停留時間
+    - 訪客趨勢
+    - 熱門展區
+    - 訪客居住地分布
+    - 互動行為
+
+# 儀表板模組 (dashboardModule.js) - 技術參考文檔
+
+## 模組概述
+
+儀表板模組是博物館觀眾行為調查系統的核心視覺化組件，負責將收集的數據轉換為直觀的圖表和統計指標，幫助管理者了解訪客行為模式和展廳熱度分布。
+
+## 數據處理流程
+
+### 1. 數據載入與處理
+
+```javascript
+// 數據載入流程
+loadData: function() {
+    try {
+        // 1. 獲取訪客互動數據
+        // 2. 轉換數據格式
+        // 3. 緩存至內部數據結構
+        // 4. 標記數據載入完成
+    } catch (error) {
+        console.error('載入數據時發生錯誤:', error);
+    }
+}
+```
+
+### 2. 訪客ID日期解析
+
+```javascript
+// 從訪客ID中解析日期信息
+
+```
+
+### 3. 數據統計計算
+
+```javascript
+// 處理訪客互動數據，生成統計結果
+processVisitorInteractionsData: function() {
+    // 初始化結果對象
+    const result = {
+        visitorCount: 0,
+        recordCount: 0,
+        totalStayTime: 0,
+        visitorTrend: Array(13).fill(0), // 月度訪客數 (索引12為無效日期)
+        popularAreas: [],                // 熱門展區
+        visitorLocations: [],            // 訪客居住地分布
+        interactionCounts: [],           // 互動行為次數
+        invalidDateCount: 0              // 無效日期計數
+    };
+    
+    // 遍歷訪客數據進行統計
+    // 計算各項指標
+    // 處理無效日期
+    
+    return result;
+}
+```
+
+## 數據計算過程
+
+### 1. 訪客數量計算
+
+```javascript
+// 訪客數量計算過程
+// 1. 創建一個Set結構來存儲不重複的訪客ID
+const visitorIds = new Set();
+
+// 2. 遍歷訪客信息表的每一行數據
+for (let i = 1; i < visitorInfo.length; i++) {
+    const row = visitorInfo[i];
+    if (!row || row.length === 0) continue;
+    
+    // 3. 如果找到有效的訪客ID，則添加到Set中
+    if (visitorIdIdx >= 0 && row[visitorIdIdx]) {
+        visitorIds.add(row[visitorIdIdx]);
+    }
+}
+
+// 4. Set的大小即為不重複訪客數量
+result.visitorCount = visitorIds.size;
+```
+
+這個過程確保每個訪客只被計算一次，無論該訪客有多少條記錄。系統使用Set數據結構自動去除重複的訪客ID。
+
+### 2. 記錄數量計算
+
+```javascript
+// 記錄數量計算過程
+// 1. 初始化記錄計數器
+result.recordCount = 0;
+
+// 2. 遍歷訪客信息表的每一行有效數據
+for (let i = 1; i < visitorInfo.length; i++) {
+    const row = visitorInfo[i];
+    if (!row || row.length === 0) continue;
+    
+    // 3. 每一行有效數據代表一條記錄，計數器加1
+    result.recordCount++;
+}
+```
+
+記錄數量統計較為直接，只需計算訪客信息表中的有效行數。
+
+### 3. 停留時間計算
+
+```javascript
+// 總停留時間計算過程
+// 1. 初始化總停留時間
+let totalStayTime = 0;
+
+// 2. 遍歷訪客信息表的每一行數據
+for (let i = 1; i < visitorInfo.length; i++) {
+    const row = visitorInfo[i];
+    if (!row || row.length === 0) continue;
+    
+    // 3. 如果存在有效的停留時間，累加到總時間中
+    if (totalSecondsIdx >= 0 && !isNaN(parseInt(row[totalSecondsIdx]))) {
+        totalStayTime += parseInt(row[totalSecondsIdx]);
+    }
+}
+
+// 4. 保存總停留時間到結果對象
+result.totalStayTime = totalStayTime;
+
+// 5. 計算平均停留時間（僅在渲染時進行）
+const avgSeconds = result.visitorCount > 0 
+    ? Math.floor(totalStayTime / result.visitorCount) 
+    : 0;
+const avgMinutes = Math.floor(avgSeconds / 60);
+const avgHours = Math.floor(avgMinutes / 60);
+const remainingMinutes = avgMinutes % 60;
+const formattedAvgTime = `${avgHours}:${remainingMinutes.toString().padStart(2, '0')}`;
+```
+
+系統累計所有訪客的停留時間（秒），然後計算平均值並格式化為時:分格式。
+
+### 4. 訪客趨勢分析
+
+```javascript
+// 訪客趨勢計算過程
+// 1. 初始化月度訪客數組（0-11為有效月份，12為無效日期）
+const monthlyVisitors = Array(13).fill(0);
+
+// 2. 遍歷訪客信息表的每一行數據
+for (let i = 1; i < visitorInfo.length; i++) {
+    const row = visitorInfo[i];
+    if (!row || row.length === 0) continue;
+    
+    // 3. 從記錄ID中解析日期
+    if (recordIdIdx >= 0 && row[recordIdIdx]) {
+        const recordId = row[recordIdIdx];
+        const dateInfo = parseVisitorIdDate(recordId);
+        
+        // 4. 根據解析結果增加對應月份的訪客數
+        if (dateInfo && dateInfo.month !== undefined) {
+            if (dateInfo.month >= 0 && dateInfo.month < 12) {
+                // 有效月份
+                monthlyVisitors[dateInfo.month]++;
+            } else {
+                // 無效月份（月份超出範圍）
+                monthlyVisitors[12]++;
+            }
+        } else {
+            // 無法解析日期
+            monthlyVisitors[12]++;
+        }
+    }
+}
+
+// 5. 保存月度趨勢數據（只保留有效月份0-11）
+result.visitorTrend = monthlyVisitors.slice(0, 12);
+// 6. 記錄無效日期數量
+result.invalidDateCount = monthlyVisitors[12];
+```
+
+系統從記錄ID中提取日期信息，統計每月訪客數量。當日期無效或無法解析時，計入專門的無效日期計數中。
+
+### 5. 熱門展區統計
+
+```javascript
+// 熱門展區統計過程
+// 1. 初始化區域計數映射
+const areaCountMap = {};
+
+// 2. 遍歷互動數據的每一行
+for (let i = 1; i < interactions.length; i++) {
+    const row = interactions[i];
+    if (!row || row.length === 0) continue;
+    
+    // 3. 統計每個展區的訪問次數
+    if (pointIdIdx >= 0 && row[pointIdIdx]) {
+        // 使用互動數據中的pointId作為區域標識
+        const areaName = row[pointIdIdx];
+        areaCountMap[areaName] = (areaCountMap[areaName] || 0) + 1;
+    }
+}
+
+// 4. 將映射轉換為數組並排序
+result.popularAreas = Object.entries(areaCountMap)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5); // 取前5個最熱門區域
+```
+
+系統統計每個點位（展區）的互動記錄數，按降序排序後取前5名，形成熱門展區排行。
+
+### 6. 訪客居住地分布
+
+```javascript
+// 訪客居住地分布統計過程
+// 1. 初始化居住地計數映射
+const residenceMap = {};
+
+// 2. 遍歷訪客信息表的每一行數據
+for (let i = 1; i < visitorInfo.length; i++) {
+    const row = visitorInfo[i];
+    if (!row || row.length === 0) continue;
+    
+    // 3. 統計每個居住地的訪客數量
+    if (residenceIdx >= 0 && row[residenceIdx]) {
+        const residence = row[residenceIdx];
+        residenceMap[residence] = (residenceMap[residence] || 0) + 1;
+    }
+}
+
+// 4. 將映射轉換為數組並排序
+result.visitorLocations = Object.entries(residenceMap)
+    .map(([location, count]) => ({ location, count }))
+    .sort((a, b) => b.count - a.count);
+```
+
+系統統計訪客的居住地分布，生成一個排序後的數組，用於圓餅圖顯示。
+
+### 7. 互動行為統計
+
+```javascript
+// 互動行為統計過程
+// 1. 初始化互動類型計數映射
+const interactionTypeMap = {};
+
+// 2. 從訪客信息中統計參觀目的
+for (let i = 1; i < visitorInfo.length; i++) {
+    const row = visitorInfo[i];
+    if (!row || row.length === 0) continue;
+    
+    if (visitPurposeIdx >= 0 && row[visitPurposeIdx]) {
+        const purposes = row[visitPurposeIdx].split(', ');
+        purposes.forEach(purpose => {
+            interactionTypeMap[purpose] = (interactionTypeMap[purpose] || 0) + 1;
+        });
+    }
+}
+
+// 3. 從互動數據中統計互動類型
+for (let i = 1; i < interactions.length; i++) {
+    const row = interactions[i];
+    if (!row || row.length === 0) continue;
+    
+    if (interactionTypeIdx >= 0 && row[interactionTypeIdx]) {
+        const types = row[interactionTypeIdx].split(', ');
+        types.forEach(type => {
+            if (type && type.trim() !== '') {
+                interactionTypeMap[type] = (interactionTypeMap[type] || 0) + 1;
+            }
+        });
+    }
+}
+
+// 4. 將映射轉換為數組並排序
+result.interactionCounts = Object.entries(interactionTypeMap)
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count);
+```
+
+互動行為統計結合了訪客信息中的參觀目的和互動數據中的互動類型，生成一個排序後的數組，顯示各類互動行為的頻率。
+
+### 8. 無效日期處理
+
+```javascript
+// 無效日期處理過程
+// 1. 定義日期解析函數
+const parseVisitorIdDate = function(recordId) {
+    try {
+        // 嘗試從recordId中解析日期
+        if (recordId.includes('_20')) {
+            const match = recordId.match(/20\d{8}/);
+            if (match) {
+                const dateString = match[0];
+                const year = parseInt(dateString.substring(0, 4));
+                const month = parseInt(dateString.substring(4, 6)) - 1; // 月份從0開始
+                const day = parseInt(dateString.substring(6, 8));
+                
+                // 驗證日期有效性
+                if (!isNaN(year) && !isNaN(month) && !isNaN(day) && 
+                    month >= 0 && month < 12 && day >= 1 && day <= 31) {
+                    // 進一步檢查日期有效性（考慮月份天數）
+                    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    // 處理閏年二月
+                    if (month === 1 && ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0)) {
+                        if (day <= 29) {
+                            return { year, month, day };
+                        }
+                    } else if (day <= daysInMonth[month]) {
+                        return { year, month, day };
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error('解析recordId日期錯誤:', e, recordId);
+    }
+    // 無法解析日期時，返回月份為12（無效）
+    return { month: 12 };
+};
+
+// 2. 在處理訪客趨勢時，無效日期的訪客被累計到monthlyVisitors[12]
+// 3. 最後將無效日期數量保存到結果對象
+result.invalidDateCount = monthlyVisitors[12];
+```
+
+系統對無效日期進行嚴格篩選，包括日期格式錯誤、月份超出範圍、日期超出當月天數等情況。所有無效日期的訪客被單獨計數，不會影響月度趨勢分析的準確性。
+
+## 圖表實現
+
+### 1. 訪客趨勢圖表 (折線圖)
+
+```javascript
+// 更新訪客趨勢圖表
+updateVisitorTrendChart: function(monthlyData, invalidDateCount) {
+    try {
+        const canvas = document.getElementById('visitorTrendChart');
+        if (!canvas) {
+            console.warn('找不到訪客趨勢圖表元素');
+            return;
+        }
+        
+        if (!monthlyData || !Array.isArray(monthlyData)) {
+            console.warn('訪客趨勢數據無效');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        
+        // 只使用有效月份數據 (排除索引 12)
+        const validMonthlyData = monthlyData.slice(0, 12);
+        
+        // 使用Chart.js創建折線圖
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                datasets: [{
+                    label: '訪客數量',
+                    data: validMonthlyData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `訪客月度趨勢 (無效日期: ${invalidDateCount || 0})`
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('更新訪客趨勢圖表時發生錯誤:', error);
+    }
+}
+```
+
+### 2. 訪客居住地分布 (圓餅圖)
+
+```javascript
+// 更新訪客居住地分布圖表
+updatePopularAreasChart: function(locationData) {
+    try {
+        const canvas = document.getElementById('popularAreasChart');
+        if (!canvas) {
+            console.warn('找不到訪客居住地分布圖表元素');
+            return;
+        }
+        
+        if (!locationData || !Array.isArray(locationData) || locationData.length === 0) {
+            console.warn('訪客居住地數據無效');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        
+        // 整理數據
+        const labels = [];
+        const data = [];
+        const colors = [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            // ... 更多顏色
+        ];
+        
+        // 排序數據並只取前7名
+        const sortedData = [...locationData].sort((a, b) => b.count - a.count).slice(0, 7);
+        
+        sortedData.forEach((item, index) => {
+            labels.push(item.area || '未知');
+            data.push(item.count);
+        });
+        
+        // 使用Chart.js創建圓餅圖
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    title: {
+                        display: true,
+                        text: '訪客居住地分布'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('更新訪客居住地分布圖表時發生錯誤:', error);
+    }
+}
+```
+
+### 3. 熱門展區圖表 (水平條形圖)
+
+```javascript
+// 更新熱門展區圖表
+updateHotAreasChart: function(areasData) {
+    try {
+        const canvas = document.getElementById('visitorLocationChart');
+        if (!canvas) {
+            console.warn('找不到熱門展區圖表元素');
+            return;
+        }
+        
+        if (!areasData || !Array.isArray(areasData) || areasData.length === 0) {
+            console.warn('熱門展區數據無效');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        
+        // 整理數據
+        const sortedData = [...areasData]
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10); // 只顯示前10名熱門展區
+                
+        const labels = sortedData.map(item => item.location || '未知');
+        const data = sortedData.map(item => item.count);
+        
+        // 使用Chart.js創建水平條形圖
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '互動次數',
+                    data: data,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '熱門展區排行'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('更新熱門展區圖表時發生錯誤:', error);
+    }
+}
+```
+
+### 4. 互動行為分布 (環形圖)
+
+```javascript
+// 更新互動行為次數圖表
+updateInteractionChart: function(interactionData) {
+    try {
+        const canvas = document.getElementById('interactionCountChart');
+        if (!canvas) {
+            console.warn('找不到互動行為次數圖表元素');
+            return;
+        }
+        
+        if (!interactionData || !Array.isArray(interactionData) || interactionData.length === 0) {
+            console.warn('互動行為數據無效');
+            return;
+        }
+
+        const ctx = canvas.getContext('2d');
+        
+        // 整理數據
+        const sortedData = [...interactionData]
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 8); // 只顯示前8種互動行為
+                
+        const labels = sortedData.map(item => item.type || '未知');
+        const data = sortedData.map(item => item.count);
+        const colors = [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            // ... 更多顏色
+        ];
+        
+        // 使用Chart.js創建環形圖
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    title: {
+                        display: true,
+                        text: '互動行為類型分布'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('更新互動行為次數圖表時發生錯誤:', error);
+    }
+}
+```
+
+## 儀表板渲染
+
+```javascript
+// 渲染儀表板
+renderDashboard: function() {
+    // 處理數據
+    const processedData = this.processVisitorInteractionsData();
+    
+    try {
+        // 更新卡片數據
+        const visitorCountElement = document.getElementById('visitorCountCard');
+        if (visitorCountElement) {
+            visitorCountElement.textContent = processedData.visitorCount || 0;
+        }
+        
+        const recordCountElement = document.getElementById('recordCountCard');
+        if (recordCountElement) {
+            recordCountElement.textContent = processedData.recordCount || 0;
+        }
+        
+        // 格式化總停留時間（秒轉為時:分:秒）
+        const totalSeconds = processedData.totalStayTime || 0;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        const totalStayTimeElement = document.getElementById('totalStayTimeCard');
+        if (totalStayTimeElement) {
+            totalStayTimeElement.textContent = formattedTime;
+        }
+        
+        // 輸出無效日期數量
+        console.log(`訪客趨勢圖表中的無效日期數量: ${processedData.invalidDateCount || 0}`);
+        
+        // 更新圖表
+        this.updateVisitorTrendChart(processedData.visitorTrend, processedData.invalidDateCount);
+        this.updatePopularAreasChart(processedData.visitorLocations); // 位置已對調，這裡顯示的是居住地分布
+        this.updateHotAreasChart(processedData.popularAreas); // 熱門展區
+        this.updateInteractionChart(processedData.interactionCounts);
+    } catch (error) {
+        console.error('渲染儀表板時發生錯誤:', error);
+    }
+}
+```
+
+## 模組初始化
+
+```javascript
+// 初始化儀表板模組
+init: function() {
+    try {
+        // 載入數據
+        this.loadData();
+        
+        // 設置更新間隔 (每60秒更新一次)
+        setInterval(this.loadData.bind(this), 60000);
+        
+        // 初始渲染儀表板
+        this.renderDashboard();
+        
+        console.log('儀表板模組初始化成功');
+    } catch (error) {
+        console.error('儀表板模組初始化失敗:', error);
+    }
+}
+```
+
+## 最佳實踐與注意事項
+
+1. **錯誤處理**：所有關鍵函數都包含完整的錯誤捕獲機制，確保即使在數據異常情況下系統也能穩定運行。
+
+2. **數據驗證**：每個圖表更新前都會檢查數據有效性，無效或空數據時會輸出適當的警告訊息。
+
+3. **DOM元素檢查**：所有DOM操作前都會檢查元素是否存在，避免因元素不存在導致的JavaScript錯誤。
+
+4. **性能優化**：
+   - 僅在必要時更新圖表
+   - 對大量數據進行排序和過濾，只顯示最相關的結果
+   - 使用適當的圖表類型和配置，確保良好的渲染性能
+
+5. **代碼維護**：
+   - 函數職責單一，便於理解和維護
+   - 統一的錯誤日誌格式，便於排查問題
+   - 詳細的註釋說明函數作用和邏輯
+
+## 擴展與客製化
+
+1. **添加新的圖表類型**：
+   - 創建新的圖表更新函數
+   - 在renderDashboard中調用新函數
+   - 確保數據處理函數提供所需的數據
+
+2. **自定義圖表外觀**：
+   - 修改Chart.js配置中的colors、fonts、borderWidth等參數
+   - 調整圖表的responsive和maintainAspectRatio設置適應不同螢幕尺寸
+
+3. **添加交互功能**：
+   - 在圖表options中設置點擊事件處理
+   - 實現數據篩選和下鑽功能
+
+## 常見問題排除
+
+1. **圖表不顯示**：
+   - 檢查DOM元素ID是否正確
+   - 確認數據格式是否符合圖表要求
+   - 查看控制台是否有錯誤訊息
+
+2. **數據異常**：
+   - 檢查parseVisitorIdDate函數的日期解析邏輯
+   - 審查原始數據格式是否符合預期
+   - 確認月份索引使用正確(0-11)
+
+3. **性能問題**：
+   - 減少同時顯示的數據量
+   - 優化數據處理循環
+   - 考慮使用數據緩存策略
+
+   因為是第一個葉面或許可以在這裡處理好所有數據
+   如果需要優化，可以考慮使用數據緩存策略，或者使用Web Worker來處理數據。
