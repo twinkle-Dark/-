@@ -1,0 +1,246 @@
+
+### 1. Users (用戶管理)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| userId      | TEXT      | 用戶ID (主鍵)            |
+| email       | TEXT      | 電子郵件                 |
+| name        | TEXT      | 用戶姓名                 |
+| role        | TEXT      | 角色(admin/manager/volunteer) |
+| dateCreated | DATETIME  | 建立日期                 |
+| lastLogin   | DATETIME  | 最後登入時間              |
+| museum      | TEXT      | 所屬博物館                |
+| status      | TEXT      | 帳號狀態(active/inactive) |
+```
+
+### 2. Museums (博物館管理)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| museumId    | TEXT      | 博物館ID (主鍵)          |
+| name        | TEXT      | 博物館名稱                |
+| exhibitionHall | TEXT  | 展廳                    |
+| section     | TEXT      | 廳別                    |
+| description | TEXT      | 描述   
+| floorPlanUrl| TEXT      | 平面圖URL               |
+| address     | TEXT      | 地址                    |
+| contact     | TEXT      | 聯絡資訊                 |                                                              
+| status      | TEXT      | 狀態                    |
+| notes       | TEXT      | 備註                    |
+                   |
+```
+
+### 3. FormTemplates (表單模板) ->停用功能移至前台
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| templateId   | TEXT      | 模板ID (主鍵)               |
+| name         | TEXT      | 模板名稱                    |
+| type         | TEXT      | 表單類型(visitor_info/behavior_record) |
+| version      | TEXT      | 版本號 (例如: v1.0, v2.0)    |
+| isActive     | BOOLEAN   | 是否為當前使用版本            |
+| createdAt    | DATETIME  | 創建日期                    |
+| updatedAt    | DATETIME  | 最後更新日期                 |
+| createdBy    | TEXT      | 創建者ID                   |
+| description  | TEXT      | 模板描述                    |
+| notes        | TEXT      | 備註 (包含版本變更說明)        |
+```
+
+### 4. FormFields (表單欄位) ->停用功能移至前台 
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| fieldId      | TEXT      | 欄位ID (主鍵)               |
+| templateId   | TEXT      | 所屬模板ID                  |
+| name         | TEXT      | 欄位名稱                    |
+| label        | TEXT      | 顯示標籤                    |
+| type         | TEXT      | 欄位類型(text/number/select/date等) |
+| required     | BOOLEAN   | 是否必填                    |
+| options      | JSON      | 選項設定 (適用於下拉選單等)      |
+| placeholder  | TEXT      | 提示文字                    |
+| sortOrder    | NUMBER    | 排序順序                    |
+| isActive     | BOOLEAN   | 是否啟用                    |
+| addedInVersion | TEXT    | 添加於哪個版本               |
+```
+
+### 5. FormOptions (表單選項) ->停用功能移至前台
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| optionId     | TEXT      | 選項ID (主鍵)               |
+| fieldId      | TEXT      | 所屬欄位ID                  |
+| value        | TEXT      | 選項值                      |
+| label        | TEXT      | 顯示標籤                    |
+| sortOrder    | NUMBER    | 排序順序                    |
+| isActive     | BOOLEAN   | 是否啟用                    |
+| addedInVersion | TEXT    | 添加於哪個版本               |
+```
+
+
+### 6. VisitorInteractions (觀眾互動記錄) 
+```sql
+  | 欄位名稱          | 資料類型   | 說明            |
+  |-----------------|-----------|----------------|
+  | recordId        | TEXT      | 紀錄ID (主鍵)    |
+  | museumId        | TEXT      | 博物館ID        |
+  | userId          | TEXT      | 記錄者ID        |
+  | pointId         | TEXT      | 點位ID          |
+  | arriveTime      | DATETIME  | 到達時間         |
+  | leaveTime       | DATETIME  | 離開時間         |
+  | staySeconds     | NUMBER    | 停留秒數         |
+  | totalSeconds    | NUMBER    | 總停留秒數 (停用) |
+  | interactionCount| NUMBER    | 互動次數         |
+  | interactionType | TEXT      | 互動行為         |
+  | notes           | TEXT      | 備註             |
+```
+
+數據記錄
+   - 用戶點擊地圖上的點位後，彈出輸入框填寫數據
+   - 記錄的數據包括：
+     | 欄位名稱          | 資料類型   | 說明            | 填寫方式        | 是否隱藏 |
+     |-----------------|-----------|----------------|----------------|---------|
+     | recordId        | TEXT      | 紀錄ID (主鍵)    | 系統自動生成     | 是 |
+     | museumId        | TEXT      | 博物館ID        | 系統自動生成     | 是 |
+     | userId          | TEXT      | 記錄者ID        | 系統自動生成     | 是 |
+     | pointId         | TEXT      | 點位ID          | 系統自動代入    | 否 |
+     | arriveTime      | DATETIME  | 到達時間         | 系統自動生成     | 是 |
+     | leaveTime       | DATETIME  | 離開時間         | 系統自動生成     | 是 |
+     | staySeconds     | NUMBER    | 停留秒數         | 系統自動計算     | 是 |
+     | interactionCount| NUMBER    | 互動次數         | 使用者填寫      | 是 |
+     | interactionType | TEXT      | 互動行為         | 使用者填寫(下拉選單)      | 否 |
+     | notes           | TEXT      | 備註            | 使用者填寫      | 否 |
+
+運作方式
+1. 當用戶點擊平面圖上的點位時:
+   - 系統自動生成recordId (格式:museumId_exhibitionHall_YYYYMMDDHHmm_userId_sequence)
+     例如: NM_CH_202401151423_201_001 
+     - NM: 博物館代碼 
+     - CH: 展廳代碼
+     - 20240115: 日期 (台灣時區)
+     - 1423: 時間 (台灣時區)
+     - 201: 志工編號
+     - 001: 每筆紀錄的順位編號第一筆為000依序
+   - 系統自動填入museumId (從用戶選擇的館廳資訊取得)
+   - 系統自動填入userId (從登入資訊取得)
+   - 系統自動填入pointId (從點擊的點位取得)
+   - 系統自動記錄arriveTime (碼表取得)
+   - 系統自動記錄leaveTime (當用戶點擊下一個點位或結束時，取得碼表)
+   - 系統自動計算staySeconds (點位碼表時間)**請在欄位中寫上，正在紀錄時間請待觀眾離開展位後再按下儲存
+
+2. 用戶需要填寫的欄位:
+   - interactionType (勾選選單複選互動行為)
+      - 互動行為包括：
+      觀看
+        - 觀看告示牌
+        - 觀看展品
+        - 觀看影片
+        - 觀看模型
+      聆聽
+        - 聆聽導覽
+        - 聆聽音樂
+      互動 
+        - 觸摸模型
+        - 互動式投影
+      紀錄
+        - 拍照
+        - 錄音
+        - 錄影
+        - 筆記
+        - 其他
+   - notes (可選填備註)
+### 7. VisitorInfo (觀眾基本資料)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| visitorId    | TEXT      | 訪客ID (主鍵)               |
+| recordId     | TEXT      | 關聯的紀錄ID                |
+| formVersion  | TEXT      | 使用的表單版本               |
+| gender       | TEXT      | 性別                       |
+| ageGroup     | TEXT      | 年齡層                     |
+| education    | TEXT      | 教育程度                    |
+| residence    | TEXT      | 居住地                     |
+| visitPurpose | TEXT      | 參觀目的                    |
+| visitFrequency | TEXT    | 參觀頻率                    |
+| consent      | BOOLEAN   | 同意授權                    |
+| extraData    | JSON      | 額外資料 (存儲非標準欄位的資料)   |
+```
+表單包含以下欄位，供用戶填寫或系統自動填入:
+     | 欄位名稱       | 資料類型    | 說明                       | 填寫方式        | 是否隱藏 |
+     |--------------|------------|---------------------------|----------------|---------|
+     | visitorId    | TEXT      | 訪客ID (主鍵)               | 系統自動生成     | 是 |
+     | recordId     | TEXT      | 關聯的紀錄ID                | 系統自動填入recordId| 是 |
+     | formVersion  | TEXT      | 使用的表單版本               | 系統自動填入表單版本| 是 |
+     | gender       | TEXT      | 性別                       | 使用者填寫(勾選) | 否 |
+     | ageGroup     | TEXT      | 年齡層                     | 使用者填寫(下拉選單) | 否 |
+     | education    | TEXT      | 教育程度                    | 使用者填寫(下拉選單) | 否 |
+     | residence    | TEXT      | 居住地                     | 使用者填寫(下拉選單) | 否 |
+     | visitPurpose | TEXT      | 參觀目的                    | 使用者填寫(勾選) | 否 |
+     | visitFrequency | TEXT    | 參觀頻率                    | 使用者填寫(勾選) | 否 |
+     | consent      | BOOLEAN   | 同意授權                    | 使用者填寫(勾選)   | 否 |
+     | extraData    | JSON      | 額外資料 (存儲非標準欄位的資料)   | 站位符        | 是 |(由totaksec取代)
+    | totalSeconds    | NUMBER    | 總停留秒數       | 系統自動計算     | 是 |
+
+//函數運作方式
+   - 系統自動生成visitorId(格式:性別 +ageGroup +education +residence+YYYYMMDD+四位數亂碼)
+     例如: F_13-18_03_TT_202401151423_2584 
+   - 系統自動填入form RecordId (格式:museumId_exhibitionHall_YYYYMMDDHHmm_userId_sequence)
+    例如: NM_CH_202401151423_201_789
+    - NM: 博物館代碼
+    - CH: 展廳代碼
+    - 20240115: 日期 (台灣時區)
+    - 1423: 時間 (台灣時區)
+    - 201: 志工編號
+    - 789: 序列號，使用毫秒數確保唯一性/若前幾碼吻合，則為關聯紀錄
+   - 系統自動填入formVersion(由表單資訊取得目前使用的表單版本)
+   - 系統自動填入totalSeconds(按下結束紀錄時由碼表取得)
+### 8. Points (展場點位)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| pointId     | TEXT      | 點位ID (主鍵)            |
+| museumId    | TEXT      | 博物館ID                |
+| name        | TEXT      | 點位名稱                 |
+| description | TEXT      | 描述                    |
+| xCoord      | NUMBER    | X座標                   |
+| yCoord      | NUMBER    | Y座標                   |
+| category    | TEXT      | 類別                    |
+| status      | TEXT      | 狀態                    |
+```
+
+### 9. SystemConfig (系統配置)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| configKey   | TEXT      | 配置鍵 (主鍵)            |
+| configValue | TEXT      | 配置值                  |
+| description | TEXT      | 描述                    |
+| lastUpdated | DATETIME  | 最後更新時間              |
+| updatedBy   | TEXT      | 更新者                  |
+```
+
+### 10. Reports (報表配置)
+```sql
+| 欄位名稱      | 資料類型    | 說明                    |
+|-------------|------------|------------------------|
+| reportId    | TEXT      | 報表ID (主鍵)            |
+| name        | TEXT      | 報表名稱                 |
+| type        | TEXT      | 報表類型                 |
+| config      | JSON      | 報表配置                 |
+| schedule    | TEXT      | 生成排程                 |
+| lastGenerated| DATETIME  | 最後生成時間              |
+| status      | TEXT      | 狀態                    |
+```
+
+### 11. FormVersionMigrations (表單版本遷移記錄)
+```sql
+| 欄位名稱       | 資料類型    | 說明                       |
+|--------------|------------|---------------------------|
+| migrationId  | TEXT      | 遷移ID (主鍵)               |
+| fromVersion  | TEXT      | 來源版本                    |
+| toVersion    | TEXT      | 目標版本                    |
+| migratedAt   | DATETIME  | 遷移時間                    |
+| migratedBy   | TEXT      | 執行遷移的用戶ID             |
+| affectedRecords | NUMBER  | 受影響的記錄數               |
+| status       | TEXT      | 狀態 (成功/失敗)             |
+| notes        | TEXT      | 備註                       |
+```

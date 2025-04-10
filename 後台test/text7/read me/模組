@@ -1,0 +1,82 @@
+## 數據庫結構
+
+### 主要數據表
+
+1. **Museums (博物館管理)**
+
+   - 主鍵: museumId
+   - 關鍵欄位: name, exhibitionHall, section, status
+
+2. **Users (用戶管理)**
+
+   - 主鍵: userId
+   - 關鍵欄位: email, name, role, dateCreated, lastLogin, museum, status
+
+3. **VisitorInteractions (觀眾互動記錄)**
+
+   - 主鍵: recordId
+   - 關鍵欄位: museumId, userId, pointId, arriveTime, leaveTime, staySeconds
+
+4. **VisitorInfo (觀眾基本資料)**
+
+   - 主鍵: visitorId
+   - 關鍵欄位: recordId, gender, ageGroup, education, residence
+
+5. **SystemConfig (系統配置)**
+   - 主鍵: configKey
+   - 關鍵欄位: configValue, description, lastUpdated, updatedBy
+
+## 應用模組結構
+
+### 1. 登入模組
+
+- 用戶驗證
+- 身份授權
+- 機構篩選
+
+### 2. 儀表板模組
+
+- 數據視覺化展示
+- KPI 指標顯示
+- 時間區間選擇 (日/週/月)
+- 可拖曳排序的數據卡片
+
+### 3. 博物館管理模組
+
+- 博物館資訊管理
+- 展廳配置
+- 階層式結構管理 (博物館/展廳/點位)
+
+### 4. 用戶管理模組
+
+- 用戶賬號管理
+- 角色權限設置
+- ID 自動生成機制
+
+### 5. 資料管理模組
+
+- 數據查詢與過濾
+- 多維度數據分析
+- 數據匯出功能
+
+### 6. 報表管理模組
+
+- 統計報表生成
+- 圖表視覺化
+- 報表匯出功能
+
+### 7. 系統設置模組
+
+- 系統參數配置
+- 系統通知設置
+
+### 8. AI 助手模組 (計劃中)
+
+1.  登入模組
+2.  儀表板模組
+3.  博物館管理模組
+4.  用戶管理模組
+5.  資料管理模組
+6.  報表管理模組
+7.  系統設置模組
+8.  AI 助手模組 (計劃中)

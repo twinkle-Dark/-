@@ -1,0 +1,524 @@
+     <div class="hotspot" style="top: 754.465576171875px; left: 917.9442596435547px;" data-location="1-1"> <div class="hotspot-name">1-1</div> </div>
+      <div class="hotspot" style="top: 850.465576171875px; left: 890.9442596435547px;" data-location="1-2"> <div class="hotspot-name">1-2</div> </div>
+      <div class="hotspot" style="top: 843.465576171875px; left: 978.9442596435547px;" data-location="1-3"> <div class="hotspot-name">1-3</div> </div>
+      <div class="hotspot" style="top: 744.465576171875px; left: 1008.9442596435547px;" data-location="2-1"> <div class="hotspot-name">2-1</div> </div>
+      <div class="hotspot" style="top: 720.465576171875px; left: 1059.9442596435547px;" data-location="2-4-1"> <div class="hotspot-name">2-4-1</div> </div>
+      <div class="hotspot" style="top: 739.465576171875px; left: 990.9442596435547px;" data-location="2-1-3"> <div class="hotspot-name">2-1-3</div> </div>
+      <div class="hotspot" style="top: 738.465576171875px; left: 971.9442596435547px;" data-location="2-1-2"> <div class="hotspot-name">2-1-2</div> </div>
+      <div class="hotspot" style="top: 737.465576171875px; left: 956.9442596435547px;" data-location="2-1-1"> <div class="hotspot-name">2-1-1</div> </div>
+      <div class="hotspot" style="top: 700.465576171875px; left: 1009.9442596435547px;" data-location="2-1-4"> <div class="hotspot-name">2-1-4</div> </div>
+      <div class="hotspot" style="top: 678.465576171875px; left: 971.9442596435547px;" data-location="2-2-2"> <div class="hotspot-name">2-2-2</div> </div>
+      <div class="hotspot" style="top: 656.465576171875px; left: 939.9442596435547px;" data-location="2-2"> <div class="hotspot-name">2-2</div> </div>
+      <div class="hotspot" style="top: 648.465576171875px; left: 1002.9442596435547px;" data-location="2-2-3"> <div class="hotspot-name">2-2-3</div> </div>
+      <div class="hotspot" style="top: 640.465576171875px; left: 1049.9442596435547px;" data-location="2-4"> <div class="hotspot-name">2-4</div> </div>
+      <div class="hotspot" style="top: 621.465576171875px; left: 999.9442596435547px;" data-location="2-2-4"> <div class="hotspot-name">2-2-4</div> </div>
+      <div class="hotspot" style="top: 632.465576171875px; left: 981.9442596435547px;" data-location="2-2-1"> <div class="hotspot-name">2-2-1</div> </div>
+      <div class="hotspot" style="top: 620.465576171875px; left: 910.9442596435547px;" data-location="2-3"> <div class="hotspot-name">2-3</div> </div>
+      <div class="hotspot" style="top: 608.465576171875px; left: 912.9442596435547px;" data-location="2-3-1"> <div class="hotspot-name">2-3-1</div> </div>
+      <div class="hotspot" style="top: 547.465576171875px; left: 1057.9442596435547px;" data-location="2-4-1"> <div class="hotspot-name">2-4-1</div> </div>
+      <div class="hotspot" style="top: 556.465576171875px; left: 962.9442596435547px;" data-location="2-4-2"> <div class="hotspot-name">2-4-2</div> </div>
+      <div class="hotspot" style="top: 550.465576171875px; left: 935.9442596435547px;" data-location="2-3-2"> <div class="hotspot-name">2-3-2</div> </div>
+      <div class="hotspot" style="top: 422.6819763183594px; left: 1073.9442596435547px;" data-location="2-4-3"> <div class="hotspot-name">2-4-3</div> </div>
+      <div class="hotspot" style="top: 432.6819763183594px; left: 867.9442596435547px;" data-location="2-4-4"> <div class="hotspot-name">2-4-4</div> </div>
+      <div class="hotspot" style="top: 535.6819763183594px; left: 788.9442596435547px;" data-location="3-1-2"> <div class="hotspot-name">3-1-2</div> </div>
+      <div class="hotspot" style="top: 520.6819763183594px; left: 778.9442596435547px;" data-location="3-1"> <div class="hotspot-name">3-1</div> </div>
+      <div class="hotspot" style="top: 512.6819763183594px; left: 758.9442596435547px;" data-location="3-1-3"> <div class="hotspot-name">3-1-3</div> </div>
+      <div class="hotspot" style="top: 490.6819763183594px; left: 792.9442596435547px;" data-location="3-1-1"> <div class="hotspot-name">3-1-1</div> </div>
+      <div class="hotspot" style="top: 530.6819763183594px; left: 734.9442596435547px;" data-location="3-1-4"> <div class="hotspot-name">3-1-4</div> </div>
+      <div class="hotspot" style="top: 476.6819763183594px; left: 722.9442596435547px;" data-location="3-1-5"> <div class="hotspot-name">3-1-5</div> </div>
+      <div class="hotspot" style="top: 478.6819763183594px; left: 746.9442596435547px;" data-location="3-1-6"> <div class="hotspot-name">3-1-6</div> </div>
+      <div class="hotspot" style="top: 431.6819763183594px; left: 812.9442596435547px;" data-location="3-1-7"> <div class="hotspot-name">3-1-7</div> </div>
+      <div class="hotspot" style="top: 434.6819763183594px; left: 747.9442596435547px;" data-location="3-2-1"> <div class="hotspot-name">3-2-1</div> </div>
+      <div class="hotspot" style="top: 409.6819763183594px; left: 722.9442596435547px;" data-location="3-2"> <div class="hotspot-name">3-2</div> </div>
+      <div class="hotspot" style="top: 403.6819763183594px; left: 803.9442596435547px;" data-location="3-2-5"> <div class="hotspot-name">3-2-5</div> </div>
+      <div class="hotspot" style="top: 392.6819763183594px; left: 803.9442596435547px;" data-location="3-2-4"> <div class="hotspot-name">3-2-4</div> </div>
+      <div class="hotspot" style="top: 383.6819763183594px; left: 776.9442596435547px;" data-location="3-2-3"> <div class="hotspot-name">3-2-3</div> </div>
+      <div class="hotspot" style="top: 384.6819763183594px; left: 732.9442596435547px;" data-location="3-2-2"> <div class="hotspot-name">3-2-2</div> </div>
+      <div class="hotspot" style="top: 354.6819763183594px; left: 711.9442596435547px;" data-location="3-3-1"> <div class="hotspot-name">3-3-1</div> </div>
+      <div class="hotspot" style="top: 355.6819763183594px; left: 733.9442596435547px;" data-location="3-3-2"> <div class="hotspot-name">3-3-2</div> </div>
+      <div class="hotspot" style="top: 353.6819763183594px; left: 753.9442596435547px;" data-location="3-3-3"> <div class="hotspot-name">3-3-3</div> </div>
+      <div class="hotspot" style="top: 335.6819763183594px; left: 707.9442596435547px;" data-location="3-3-4"> <div class="hotspot-name">3-3-4</div> </div>
+      <div class="hotspot" style="top: 336.6819763183594px; left: 787.9442596435547px;" data-location="3-3"> <div class="hotspot-name">3-3</div> </div>
+      <div class="hotspot" style="top: 353.36721324920654px; left: 842.9442596435547px;" data-location="4-1"> <div class="hotspot-name">4-1</div> </div>
+      <div class="hotspot" style="top: 351.9704895019531px; left: 878.9442596435547px;" data-location="4-1-1"> <div class="hotspot-name">4-1-1</div> </div>
+      <div class="hotspot" style="top: 308.9704895019531px; left: 926.9442596435547px;" data-location="4-4-1"> <div class="hotspot-name">4-4-1</div> </div>
+      <div class="hotspot" style="top: 302.9704895019531px; left: 971.9442596435547px;" data-location="4-4-2"> <div class="hotspot-name">4-4-2</div> </div>
+      <div class="hotspot" style="top: 353.9704895019531px; left: 1007.9442596435547px;" data-location="4-1-4"> <div class="hotspot-name">4-1-4</div> </div>
+      <div class="hotspot" style="top: 351.9704895019531px; left: 1036.9442596435547px;" data-location="4-1-2"> <div class="hotspot-name">4-1-2</div> </div>
+      <div class="hotspot" style="top: 354.9704895019531px; left: 1058.9442596435547px;" data-location="4-1-3"> <div class="hotspot-name">4-1-3</div> </div>
+      <div class="hotspot" style="top: 350.9704895019531px; left: 1091.9442596435547px;" data-location="4-2"> <div class="hotspot-name">4-2</div> </div>
+      <div class="hotspot" style="top: 340.9704895019531px; left: 1072.9442596435547px;" data-location="4-2-1"> <div class="hotspot-name">4-2-1</div> </div>
+      <div class="hotspot" style="top: 325.9704895019531px; left: 1067.9442596435547px;" data-location="4-2-2"> <div class="hotspot-name">4-2-2</div> </div>
+      <div class="hotspot" style="top: 306.9704895019531px; left: 1065.9442596435547px;" data-location="4-2-3"> <div class="hotspot-name">4-2-3</div> </div>
+      <div class="hotspot" style="top: 251.97048950195312px; left: 1086.9442596435547px;" data-location="4-3"> <div class="hotspot-name">4-3</div> </div>
+      <div class="hotspot" style="top: 263.9704895019531px; left: 1005.9442596435547px;" data-location="4-4"> <div class="hotspot-name">4-4</div> </div>
+      <div class="hotspot" style="top: 247.97048950195312px; left: 1061.9442596435547px;" data-location="4-3-1"> <div class="hotspot-name">4-3-1</div> </div>
+      <div class="hotspot" style="top: 223.36721801757812px; left: 1063.9442596435547px;" data-location="4-3-2"> <div class="hotspot-name">4-3-2</div> </div>
+      <div class="hotspot" style="top: 202.36721801757812px; left: 1065.9442596435547px;" data-location="4-3-3"> <div class="hotspot-name">4-3-3</div> </div>
+      <div class="hotspot" style="top: 198.36721801757812px; left: 944.9442596435547px;" data-location="5-1-1"> <div class="hotspot-name">5-1-1</div> </div>
+      <div class="hotspot" style="top: 197.36721801757812px; left: 913.9442596435547px;" data-location="5-1"> <div class="hotspot-name">5-1</div> </div>
+      <div class="hotspot" style="top: 183.36721801757812px; left: 882.9442596435547px;" data-location="5-1-2"> <div class="hotspot-name">5-1-2</div> </div>
+      <div class="hotspot" style="top: 178.36721801757812px; left: 854.9442596435547px;" data-location="5-1-3"> <div class="hotspot-name">5-1-3</div> </div>
+      <div class="hotspot" style="top: 131.36721801757812px; left: 786.9442596435547px;" data-location="5-3"> <div class="hotspot-name">5-3</div> </div>
+      <div class="hotspot" style="top: 147.36721801757812px; left: 779.9442596435547px;" data-location="5-3-1"> <div class="hotspot-name">5-3-1</div> </div>
+      <div class="hotspot" style="top: 248.36721801757812px; left: 776.9442596435547px;" data-location="3-3-5"> <div class="hotspot-name">3-3-5</div> </div>
+      <div class="hotspot" style="top: 221.36721801757812px; left: 781.9442596435547px;" data-location="5-3-2"> <div class="hotspot-name">5-3-2</div> </div>
+      <div class="hotspot" style="top: 225.36721801757812px; left: 719.9442596435547px;" data-location="5-4"> <div class="hotspot-name">5-4</div> </div>
+      <div class="hotspot" style="top: 225.36721801757812px; left: 697.9442596435547px;" data-location="5-4-2"> <div class="hotspot-name">5-4-2</div> </div>
+      <div class="hotspot" style="top: 204.36721801757812px; left: 718.9442596435547px;" data-location="5-4-1"> <div class="hotspot-name">5-4-1</div> </div>
+      <div class="hotspot" style="top: 193.36721801757812px; left: 676.9442596435547px;" data-location="5-4-3"> <div class="hotspot-name">5-4-3</div> </div>
+      <div class="hotspot" style="top: 102.36721801757812px; left: 743.9442596435547px;" data-location="5-3-1"> <div class="hotspot-name">5-3-1</div> </div>
+      <div class="hotspot" style="top: 52.367218017578125px; left: 788.9442596435547px;" data-location="5-2"> <div class="hotspot-name">5-2</div> </div>
+      <div class="hotspot" style="top: 31.367218017578125px; left: 778.9442596435547px;" data-location="5-2-1"> <div class="hotspot-name">5-2-1</div> </div>
+      <div class="hotspot" style="top: 31.367218017578125px; left: 751.9442596435547px;" data-location="5-2-2"> <div class="hotspot-name">5-2-2</div> </div>
+      <div class="hotspot" style="top: 31.367218017578125px; left: 710.9442596435547px;" data-location="5-2-3-2"> <div class="hotspot-name">5-2-3-2</div> </div>
+      <div class="hotspot" style="top: 63.367218017578125px; left: 728.9442596435547px;" data-location="5-2-3-1"> <div class="hotspot-name">5-2-3-1</div> </div>
+      <div class="hotspot" style="top: 30.367218017578125px; left: 649.9442596435547px;" data-location="5-2-4"> <div class="hotspot-name">5-2-4</div> </div>
+      <div class="hotspot" style="top: 39.367218017578125px; left: 610.9442596435547px;" data-location="5-5"> <div class="hotspot-name">5-5</div> </div>
+      <div class="hotspot" style="top: 63.367218017578125px; left: 600.9442596435547px;" data-location="5-5-1"> <div class="hotspot-name">5-5-1</div> </div>
+      <div class="hotspot" style="top: 112.36721801757812px; left: 609.9442596435547px;" data-location="5-5-2"> <div class="hotspot-name">5-5-2</div> </div>
+      <div class="hotspot" style="top: 60.367218017578125px; left: 490.9442596435547px;" data-location="6-1-1"> <div class="hotspot-name">6-1-1</div> </div>
+      <div class="hotspot" style="top: 134.36721801757812px; left: 492.9442596435547px;" data-location="6-1"> <div class="hotspot-name">6-1</div> </div>
+      <div class="hotspot" style="top: 109.36721801757812px; left: 463.9442596435547px;" data-location="6-1-2"> <div class="hotspot-name">6-1-2</div> </div>
+      <div class="hotspot" style="top: 125.5803279876709px; left: 419.9442596435547px;" data-location="6-2-3"> <div class="hotspot-name">6-2-3</div> </div>
+      <div class="hotspot" style="top: 40.5803279876709px; left: 435.9442596435547px;" data-location="6-2"> <div class="hotspot-name">6-2</div> </div>
+      <div class="hotspot" style="top: 30.5803279876709px; left: 415.9442596435547px;" data-location="6-2-1"> <div class="hotspot-name">6-2-1</div> </div>
+      <div class="hotspot" style="top: 33.5803279876709px; left: 353.9442596435547px;" data-location="6-2-2"> <div class="hotspot-name">6-2-2</div> </div>
+      <div class="hotspot" style="top: 37.5803279876709px; left: 303.9442596435547px;" data-location="6-3"> <div class="hotspot-name">6-3</div> </div>
+      <div class="hotspot" style="top: 74.5803279876709px; left: 286.9442596435547px;" data-location="6-2-3"> <div class="hotspot-name">6-2-3</div> </div>
+      <div class="hotspot" style="top: 31.5803279876709px; left: 264.9442596435547px;" data-location="6-3-1"> <div class="hotspot-name">6-3-1</div> </div>
+      <div class="hotspot" style="top: 103.5803279876709px; left: 247.9442596435547px;" data-location="6-3-3"> <div class="hotspot-name">6-3-3</div> </div>
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 方案一：分組顯示系統
+
+### 實現細節
+1. 建立分組過濾控制面板：
+   - 在平面圖上方添加一組按鈕或下拉選單，對應6個點位組別
+   - 提供"全部顯示"選項和獨立的1-6號組選擇鈕
+
+2. 程式碼實現：
+```javascript
+// 添加分組控制面板
+const filterContainer = document.createElement('div');
+filterContainer.className = 'filter-container';
+filterContainer.innerHTML = `
+  <span>篩選點位：</span>
+  <button class="filter-btn active" data-group="all">全部</button>
+  <button class="filter-btn" data-group="1">1區</button>
+  <button class="filter-btn" data-group="2">2區</button>
+  <button class="filter-btn" data-group="3">3區</button>
+  <button class="filter-btn" data-group="4">4區</button>
+  <button class="filter-btn" data-group="5">5區</button>
+  <button class="filter-btn" data-group="6">6區</button>
+`;
+
+// 加入點位篩選功能
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // 更新按鈕狀態
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    
+    const group = this.getAttribute('data-group');
+    
+    // 篩選顯示點位
+    document.querySelectorAll('.hotspot').forEach(hotspot => {
+      if (group === 'all') {
+        hotspot.style.display = 'block';
+      } else {
+        const location = hotspot.getAttribute('data-location');
+        const firstDigit = location.split('-')[0];
+        hotspot.style.display = (firstDigit === group) ? 'block' : 'none';
+      }
+    });
+  });
+});
+```
+
+3. CSS樣式：
+```css
+.filter-container {
+  margin: 15px auto;
+  text-align: center;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  margin: 0 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.filter-btn.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #2980b9;
+}
+```
+
+### 難易度評估
+- **技術難度**：低
+- **所需時間**：2-4小時
+- **主要挑戰**：確保UI的響應性和易用性
+- **兼容性問題**：需確保在行動裝置上按鈕大小足夠易點擊
+
+## 方案三：智能點位群組化
+
+### 實現細節
+1. 距離計算功能：
+   - 計算所有點位間的距離
+   - 設定閾值來判斷哪些點位應該合併
+
+2. 點位群組邏輯：
+```javascript
+// 設定合併距離閾值（像素）
+const MERGE_THRESHOLD = 40;
+
+// 計算兩點距離
+function distance(p1, p2) {
+  return Math.sqrt(
+    Math.pow(p1.top - p2.top, 2) + 
+    Math.pow(p1.left - p2.left, 2)
+  );
+}
+
+// 找出所有需要合併的點位群組
+function findClusters(hotspots) {
+  const clusters = [];
+  const processed = new Set();
+  
+  hotspots.forEach((hotspot, index) => {
+    if (processed.has(index)) return;
+    
+    const rect = hotspot.getBoundingClientRect();
+    const p1 = {
+      top: rect.top,
+      left: rect.left,
+      element: hotspot
+    };
+    
+    const cluster = [p1];
+    processed.add(index);
+    
+    // 尋找附近的點位
+    hotspots.forEach((h2, i2) => {
+      if (index === i2 || processed.has(i2)) return;
+      
+      const rect2 = h2.getBoundingClientRect();
+      const p2 = {
+        top: rect2.top,
+        left: rect2.left,
+        element: h2
+      };
+      
+      if (distance(p1, p2) < MERGE_THRESHOLD) {
+        cluster.push(p2);
+        processed.add(i2);
+      }
+    });
+    
+    clusters.push(cluster);
+  });
+  
+  return clusters;
+}
+
+// 創建群組點位顯示
+function createClusterView(clusters) {
+  // 隱藏原始點位
+  document.querySelectorAll('.hotspot').forEach(h => {
+    h.style.display = 'none';
+  });
+  
+  // 為每個群組創建代表點位
+  clusters.forEach(cluster => {
+    if (cluster.length === 1) {
+      // 單點直接顯示
+      cluster[0].element.style.display = 'block';
+      return;
+    }
+    
+    // 計算群組中心點
+    const avgTop = cluster.reduce((sum, p) => sum + p.top, 0) / cluster.length;
+    const avgLeft = cluster.reduce((sum, p) => sum + p.left, 0) / cluster.length;
+    
+    // 創建群組點位
+    const clusterPoint = document.createElement('div');
+    clusterPoint.className = 'hotspot cluster-point';
+    clusterPoint.style.top = `${avgTop}px`;
+    clusterPoint.style.left = `${avgLeft}px`;
+    clusterPoint.innerHTML = `<div class="cluster-count">${cluster.length}</div>`;
+    
+    // 點擊時顯示該群組的所有點位
+    clusterPoint.addEventListener('click', () => {
+      clusterPoint.style.display = 'none';
+      
+      // 顯示群組內所有點位
+      cluster.forEach(p => {
+        p.element.style.display = 'block';
+      });
+      
+      // 創建返回按鈕
+      const backBtn = document.createElement('div');
+      backBtn.className = 'cluster-back-btn';
+      backBtn.textContent = '返回';
+      backBtn.addEventListener('click', () => {
+        // 隱藏群組點位
+        cluster.forEach(p => {
+          p.element.style.display = 'none';
+        });
+        // 顯示群組代表點
+        clusterPoint.style.display = 'block';
+        backBtn.remove();
+      });
+      
+      document.querySelector('.floorplan').appendChild(backBtn);
+    });
+    
+    document.querySelector('.floorplan').appendChild(clusterPoint);
+  });
+}
+
+// 應用群組化
+const hotspots = Array.from(document.querySelectorAll('.hotspot'));
+const clusters = findClusters(hotspots);
+createClusterView(clusters);
+```
+
+3. 額外的CSS樣式：
+```css
+.cluster-point {
+  width: 24px;
+  height: 24px;
+  background-color: #3498db;
+  border: 2px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.cluster-count {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.cluster-back-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0,0,0,0.7);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 15;
+}
+```
+
+### 難易度評估
+- **技術難度**：高
+- **所需時間**：8-12小時
+- **主要挑戰**：
+  - 複雜的距離計算和群組邏輯
+  - 處理群組展開和收起的交互
+  - 優化性能，特別是點位眾多時
+- **兼容性問題**：需處理不同設備上的觸控事件
+
+## 方案四：改進標籤顯示方式
+
+### 實現細節
+1. 改進標籤顯示方式：
+   - 默認隱藏所有標籤
+   - 鼠標懸停或點擊時顯示標籤
+   - 為行動裝置提供更大點擊區域
+
+2. 程式碼實現：
+```javascript
+// 改變標籤顯示方式
+document.querySelectorAll('.hotspot').forEach(hotspot => {
+  // 獲取並隱藏標籤
+  const label = hotspot.querySelector('.hotspot-name');
+  label.style.visibility = 'hidden';
+  label.style.opacity = '0';
+  label.style.transition = 'opacity 0.3s, visibility 0.3s';
+  
+  // 檢測設備類型
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  if (isMobile) {
+    // 行動裝置：點擊切換顯示
+    let isLabelVisible = false;
+    
+    hotspot.addEventListener('click', function(e) {
+      // 防止點擊事件冒泡到父元素
+      e.stopPropagation();
+      
+      // 隱藏所有其他標籤
+      document.querySelectorAll('.hotspot-name').forEach(l => {
+        if (l !== label) {
+          l.style.visibility = 'hidden';
+          l.style.opacity = '0';
+        }
+      });
+      
+      // 切換當前標籤顯示狀態
+      isLabelVisible = !isLabelVisible;
+      
+      if (isLabelVisible) {
+        label.style.visibility = 'visible';
+        label.style.opacity = '1';
+        
+        // 如果標籤已顯示，延遲觸發點位的正常點擊行為
+        setTimeout(() => {
+          if (isLabelVisible) {
+            // 執行原本的點擊事件邏輯（打開模態窗）
+            if (!timerInterval) {
+              startTimer();
+            }
+            openModal(hotspot.getAttribute('data-location'));
+            isLabelVisible = false;
+          }
+        }, 1500); // 1.5秒後如果用戶沒有點擊其他地方，執行原始點擊功能
+      } else {
+        label.style.visibility = 'hidden';
+        label.style.opacity = '0';
+      }
+    });
+    
+    // 點擊其他區域時隱藏所有標籤
+    document.addEventListener('click', function() {
+      document.querySelectorAll('.hotspot-name').forEach(l => {
+        l.style.visibility = 'hidden';
+        l.style.opacity = '0';
+      });
+      isLabelVisible = false;
+    });
+    
+  } else {
+    // 桌面設備：懸停顯示
+    hotspot.addEventListener('mouseenter', function() {
+      label.style.visibility = 'visible';
+      label.style.opacity = '1';
+    });
+    
+    hotspot.addEventListener('mouseleave', function() {
+      label.style.visibility = 'hidden';
+      label.style.opacity = '0';
+    });
+  }
+});
+```
+
+3. 改進標籤樣式：
+```css
+.hotspot-name {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 4px 8px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  pointer-events: none;
+  z-index: 20;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* 增加點位可點擊範圍 */
+.hotspot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  transform-origin: center;
+  transition: transform 0.2s;
+}
+
+/* 在行動裝置上增大點擊區域 */
+@media (max-width: 768px) {
+  .hotspot {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .hotspot::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+  }
+}
+```
+
+### 難易度評估
+- **技術難度**：中
+- **所需時間**：4-6小時
+- **主要挑戰**：
+  - 處理行動裝置和桌面裝置不同的交互邏輯
+  - 解決點擊事件衝突（顯示標籤 vs 開啟模態窗）
+- **兼容性問題**：
+  - 需要針對觸控設備優化
+  - 確保標籤不會超出視圖範圍
+
+## 實施建議
+
+建議按照以下順序實施這些方案：
+
+1. **先實施方案四**（改進標籤顯示方式）：
+   - 最快能提供改善，減少視覺雜亂
+   - 能立即解決標籤辨識問題
+
+2. **其次實施方案一**（分組顯示系統）：
+   - 實施難度適中，提供即時篩選功能
+   - 與方案四結合效果佳
+
+3. **最後考慮方案三**（智能點位群組化）：
+   - 在前兩個方案仍無法滿足需求時實施
+   - 需要較多開發時間，但提供最完整的解決方案
+
+前兩個方案結合已能解決大部分問題，第三個方案可作為長期優化目標。

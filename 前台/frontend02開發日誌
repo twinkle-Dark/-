@@ -1,0 +1,182 @@
+# frontend02.html 主要問題與解決方案
+
+## 1. 儲存按鈕重複綁定問題   ✅
+問題描述：
+- HTML 中使用了 onclick 屬性：`<button class="save-btn" onclick="saveRecord()">儲存</button>`
+- JavaScript 中又使用 addEventListener：`document.querySelector('.save-btn').addEventListener('click', saveRecord);`
+影響：
+- 可能導致儲存函數被調用兩次
+- 造成數據重複記錄或異常行為
+
+解決方案：
+```javascript
+// 移除 HTML 中的 onclick 屬性
+<button class="save-btn">儲存</button>
+
+// 只在 JavaScript 中綁定一次
+document.querySelector('.save-btn').addEventListener('click', saveRecord);
+```
+
+## 2. 記錄容器 ID 不一致問題 ✅
+問題描述：
+- HTML 中使用 `recordsList`：`<div class="records-container" id="recordsList">`
+- JavaScript 中錯誤使用 `records`：`document.getElementById('records')`
+影響：
+- 導致無法正確更新記錄列表
+- 結束記錄後的數據清理可能失效
+
+解決方案：
+```javascript
+// 統一使用 recordsList
+const recordsContainer = document.getElementById('recordsList');
+if (recordsContainer) {
+  recordsContainer.innerHTML = '<p>目前沒有記錄。</p>';
+}
+```
+
+## 3. 全局變量作用域問題
+問題描述：
+- generateRouteMap 函數中創建了新的局部變量 records
+- 這會遮蔽全局的 records 變量
+影響：
+- 路線圖生成後的數據狀態可能不正確
+- 可能影響後續的記錄操作
+
+解決方案：
+```javascript
+function generateRouteMap(shouldSendData = false) {
+  // 使用全局變量而不是創建新的局部變量
+  const validRecords = records.filter(record => !record.deleted);
+  
+  if (validRecords.length <= 1) {
+    console.log('記錄數量不足，無法生成路線圖');
+    if (shouldSendData) {
+      sendDataToGoogleSheet();
+    }
+    return;
+  }
+  // ... 其餘代碼
+}
+```
+
+## 功能影響總結：
+1. 儲存按鈕重複綁定：
+   - 可能導致一次點擊觸發兩次儲存
+   - 造成數據重複或異常
+   - 影響用戶體驗
+
+2. 記錄容器 ID 不一致：
+   - 結束記錄後無法正確清空記錄列表
+   - 用戶看不到最新的記錄狀態
+   - 介面顯示與實際數據不同步
+
+3. 全局變量作用域：
+   - 路線圖生成後可能丟失部分數據
+   - 影響後續記錄的添加和顯示
+   - 可能導致數據統計不準確
+
+## 建議改進：
+1. 統一事件綁定方式
+2. 統一使用 ID 命名
+3. 注意變量作用域
+4. 添加錯誤處理和日誌
+5. 改進用戶反饋機制 
+
+```
+
+## 4. 計時器重置問題
+問題描述：
+- resetRecording 函數中只停止計時器，沒有重新啟動
+- 新記錄開始時可能沒有計時器運行
+影響：
+- 用戶開始新記錄時計時器不會自動啟動
+- 可能導致時間記錄不準確
+
+## 5. 未定義變量使用問題
+問題描述：
+- sendDataToGoogleSheet 函數中使用了未定義的 retryCount 變量
+- 部分函數中使用了未聲明的全局變量
+影響：
+- 可能導致運行時錯誤
+- 代碼可維護性降低
+
+## 6. 錯誤處理不完整
+問題描述：
+- 缺少全局錯誤處理機制
+- 部分異步操作沒有錯誤處理
+影響：
+- 錯誤發生時用戶體驗差
+- 難以診斷和修復問題
+
+## 功能影響總結：
+1. 儲存按鈕重複綁定：
+   - 可能導致一次點擊觸發兩次儲存
+   - 造成數據重複或異常
+   - 影響用戶體驗
+
+2. 記錄容器 ID 不一致：
+   - 結束記錄後無法正確清空記錄列表
+   - 用戶看不到最新的記錄狀態
+   - 介面顯示與實際數據不同步
+
+3. 全局變量作用域：
+   - 路線圖生成後可能丟失部分數據
+   - 影響後續記錄的添加和顯示
+   - 可能導致數據統計不準確
+
+4. 計時器重置問題：
+   - 新記錄開始時計時器未重新啟動
+   - 可能導致時間記錄不準確
+   - 用戶開始新記錄時計時器不會自動啟動
+
+5. 未定義變量使用問題：
+   - sendDataToGoogleSheet 函數中使用了未定義的 retryCount 變量
+   - 部分函數中使用了未聲明的全局變量
+   - 可能導致運行時錯誤
+   - 代碼可維護性降低
+
+6. 錯誤處理不完整：
+   - 缺少全局錯誤處理機制
+   - 部分異步操作沒有錯誤處理
+   - 錯誤發生時用戶體驗差
+   - 難以診斷和修復問題
+
+## 建議改進：
+1. 統一事件綁定方式
+2. 統一使用 ID 命名
+3. 注意變量作用域
+4. 添加錯誤處理和日誌
+5. 改進用戶反饋機制 
+--- 
+
+## C-7. 路線圖座標計算問題
+問題描述：
+- 路線圖生成時使用 getBoundingClientRect() 可能受滾動位置影響
+- SVG 坐標計算沒有考慮頁面縮放
+影響：
+- 路線圖位置可能不準確
+- 在不同設備上顯示效果不一致
+
+## C-8. 模態窗口管理問題
+問題描述：
+- 多個模態窗口的顯示/隱藏邏輯分散
+- 缺少統一的模態窗口管理機制
+影響：
+- 可能出現多個模態窗口同時顯示
+- 用戶體驗不連貫
+
+## C-9. 數據驗證不完整
+問題描述：
+- 部分用戶輸入沒有進行驗證
+- 缺少數據格式的統一檢查
+影響：
+- 可能保存無效或不完整的數據
+- 數據質量無法保證
+
+## C-10. 本地存儲管理問題
+問題描述：
+- localStorage 的使用分散在多個函數中
+- 缺少統一的存儲管理機制
+影響：
+- 數據一致性難以維護
+- 存儲空間使用效率低

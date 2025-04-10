@@ -1,0 +1,100 @@
+請依照代碼模組化：將功能相似的函數組織在一起，如計時器相關、記錄管理相關、UI交互相關等 該原則，說明如何優化@cursor.html 
+區分公開方法及私有方法，並依具依賴關係，修改模組
+
+1. TimerManager (計時器管理模組):
+   - 職責: 管理主計時器和點位計時器。
+   - 包含函數/變數: startTimer, updateTimer, timerInterval, startTime, pointTimerInterval, currentArriveTime (部分邏輯，主要是計時顯示)。
+   - 數據: 計時器狀態。
+
+2. RecordManager (記錄管理模組):
+   - 職責: 管理 records 陣列，包括加載、保存、刪除、重置記錄，以及與 LocalStorage 的互動。
+   - 包含函數/變數: initialize (部分關於記錄加載), saveRecord (核心邏輯), loadRecords, deleteRecord, resetRecording (部分關於記錄清除), records 陣列, localStorage 相關操作。
+   - 數據: records 陣列。
+
+3. UIManager (UI 互動模組):
+   - 職責: 處理所有與使用者介面相關的互動，包括模態框的顯示/隱藏、按鈕點擊事件（非核心數據處理）、Toast 提示、點位點擊處理、DOM 元素獲取和操作。
+   - 包含函數/變數: openModal, closeModal, showToast, processToastQueue, toastQueue, isShowingToast, initialize (DOM元素獲取和事件綁定部分), DOMContentLoaded 內的事件綁定邏輯 (如 newRecordButton.onclick, endButton.onclick, 同意/不同意按鈕事件等)。
+   - 數據: 模態框狀態、Toast 狀態。
+
+4. FormDataManager (表單數據模組):
+   - 職責: 處理從表單（活動記錄表單、訪客資訊表單）獲取數據、驗證數據、清空表單。
+   - 包含函數/變數: getMuseumId, getExhibitionHall, getUserId, getPointId, getArriveTime, getLeaveTime, calculateStaySeconds, getInteractionCount, getInteractionType, getNotes, resetVisitorForm, visitorInfoForm 的提交驗證邏輯。
+   - 數據: 無 (主要處理瞬時數據)
+
+5. VisitorFlowManager (訪客流程模組):
+   - 職責: 管理結束記錄後的流程，包括顯示同意書、收集訪客資訊、生成訪客 ID。
+   - 包含函數/變數: endButton.onclick 的核心邏輯（觸發流程）、同意/不同意按鈕的邏輯、訪客表單的顯示與提交處理、visitorId 生成邏輯。
+   - 數據: 訪客流程狀態。
+
+6. SubmissionManager (數據提交模組):
+   - 職責: 負責將收集到的記錄和訪客資訊發送到 Google Sheet，處理成功/失敗回調，以及失敗重試機制。
+   - 包含函數/變數: sendDataToGoogleSheet, checkFailedSubmissions, retryCount, localStorage 中 failedSubmission 的相關操作。
+   - 數據: 提交狀態、重試計數。
+
+7. RouteMapManager (路線圖模組):
+   - 職責: 負責在 SVG 上繪製參觀者的路線圖。
+   - 包含函數/變數: generateRouteMap, extractSequence (如果只在此處用)。
+   - 數據: SVG 元素引用。
+
+8. Utils (工具函數模組):
+   - 職責: 存放通用的輔助函數。
+   - 包含函數/變數: toTaiwanISOString, generateRecordId (若多處使用), extractSequence (若多處使用)。
+
+9. 重置模組:
+   - 職責: 重置所有模組的狀態。
+   - 包含函數/變數: resetRecording
+... 
+
+graph TD
+    A[初始化階段] --> B[數據記錄階段]
+    B --> C[結束記錄階段]
+    C --> D[訪客資訊階段]
+    D --> E[路線圖生成階段]
+    E --> F[數據提交階段]
+    
+    %% 模組間依賴關係
+    UI[UIManager] --> RM[RouteMapManager]
+    RM --> SM[SubmissionManager]
+    TM[TimerManager] --> RM
+    RecM[RecordManager] --> RM
+    FDM[FormDataManager] --> RM
+    RM --> SM
+    
+    %% 詳細時間順序
+    subgraph 初始化
+        A1[DOMContentLoaded] --> A2[初始化UI元素]
+        A2 --> A3[綁定事件監聽器]
+        A3 --> A4[初始化RouteMapManager]
+    end
+    
+    subgraph 記錄過程
+        B1[點擊點位] --> B2[開始計時]
+        B2 --> B3[記錄停留時間與互動]
+        B3 --> B4[保存記錄到localStorage]
+        B4 --> B5[更新記錄列表]
+    end
+    
+    subgraph 結束記錄
+        C1[點擊結束記錄按鈕] --> C2[停止計時器]
+        C2 --> C3[顯示同意書]
+    end
+    
+    subgraph 訪客資訊
+        D1[同意收集資訊] --> D2[顯示訪客表單]
+        D2 --> D3[填寫並驗證表單]
+        D3 --> D4[提交表單]
+    end
+    
+    subgraph 路線圖生成
+        E1[RouteMapManager.generate調用] --> E2[獲取記錄數據]
+        E2 --> E3[排序記錄]
+        E3 --> E4[繪製路線]
+        E4 --> E5[繪製序號]
+        E5 --> E6[設置動畫效果]
+    end
+    
+    subgraph 數據提交
+        F1[路線圖生成完成] --> F2[發送數據到Google Sheet]
+        F2 --> F3[顯示結果提示]
+        F3 --> F4[重置狀態等待新記錄]
+    end

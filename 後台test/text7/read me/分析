@@ -1,0 +1,155 @@
+# 系統圖表實現方案
+
+## 目前實現：基於 Chart.js 的前端圖表
+
+目前系統使用 Chart.js 在前端實現完整的圖表功能。Chart.js 是一個 JavaScript 庫，能夠創建互動性強、響應式的圖表，適用於瀏覽器環境。
+
+### 已實現的圖表類型：
+
+- **折線圖**：用於展示訪客月度趨勢
+- **圓餅圖**：用於展示訪客居住地分布
+- **水平條形圖**：用於展示熱門展區排行
+- **環形圖**：用於展示互動行為類型分布
+
+### 關鍵功能：
+
+- **錯誤處理**：所有圖表都有完整的錯誤捕獲機制
+- **數據驗證**：確保圖表數據的有效性，提供默認值處理
+- **自適應布局**：圖表能夠自適應不同尺寸的顯示設備
+- **標題與註釋**：圖表包含清晰的標題和額外信息（如無效數據計數）
+
+### 未來擴展方向：
+
+- 添加更多互動功能（點擊下鑽、懸停詳情等）
+- 實現數據過濾和排序功能
+- 增加更多圖表類型（熱力圖、雷達圖等）
+
+# 1. Charts 服務
+
+Charts 服務允許您使用 GAS 腳本程式化地創建各種圖表，這些圖表可以基於您的資料並嵌入到 Google Sheets、Google Docs 或作為獨立的 Web 應用程式呈現。這對於資料分析結果的可視化非常有用。
+
+## 主要功能和概念：
+
+### 圖表建立器 (Chart Builders)
+
+Charts 服務提供了一系列的「圖表建立器」類別，每個類別對應一種圖表類型。例如：
+
+- `Charts.LineChartBuilder()`: 建立折線圖
+- `Charts.BarChartBuilder()`: 建立長條圖
+- `Charts.PieChartBuilder()`: 建立圓餅圖
+- `Charts.ScatterChartBuilder()`: 建立散佈圖
+- `Charts.AreaChartBuilder()`: 建立面積圖
+- `Charts.ColumnChartBuilder()`: 建立直條圖
+- `Charts.TableChartBuilder()`: 建立表格圖
+- 等等...
+
+### 資料來源 (DataTable)
+
+圖表需要資料作為輸入。您可以使用 `Charts.newDataTable()` 創建一個 DataTable 物件
+然後使用 `addColumn()` 定義欄位（例如，日期、類別、數值），並使用 `addRow()` 或 `addRows()` 添加資料。通常，您會將從 Google Sheets 讀取的資料轉換為 DataTable 的格式。
+
+### 設定選項 (Options)
+
+每個圖表建立器都提供了一系列的方法來設定圖表的各種選項，例如標題、軸標籤、顏色、圖例位置、
+是否為 3D 等。這些選項可以自訂圖表的外觀和行為。
+
+### 建立圖表 (build())
+
+在設定好資料和選項後，您需要調用圖表建立器的 `build()` 方法來創建實際的圖表物件 (Chart).
+
+### 將圖表嵌入到 Google 服務中
+
+- **Google Sheets**
+  (`SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().insertChart(chart)`):.
+  可以將創建的圖表嵌入到目前活動的工作表中。您可以指定圖表的位置和大小。
+- **Google Docs**
+  (`DocumentApp.getActiveDocument().getBody().insertChart(chart)`):
+  可以將圖表嵌入到目前活動的文件中。
+- **Web 應用程式**
+  (`Chart.getAs('image/png').getDataAsString()` 等):
+  可以將圖表導出為圖片格式 (例如 PNG, JPEG, SVG) 的資料 URL，然後在 Web 應用程式中顯示。
+
+  // 建立圖表
+  var chart = chartBuilder.build();
+
+  // 將圖表嵌入到工作表中 (可以指定位置和大小)
+  sheet.insertChart(chart);
+
+## Charts 服務的優點：
+
+- **與 Google 生態系統無縫整合**：輕鬆地將圖表嵌入到 Sheets 和 Docs 中。
+- **程式化控制**：可以根據資料的變化自動更新圖表。
+- **多種圖表類型**：支援常見的資料可視化需求。
+- **自訂選項**：可以調整圖表的外觀以符合您的需求。
+
+## Charts 服務的限制：
+
+- **功能相對基礎**：與專門的資料可視化工具（如 Tableau, Power BI）相比，提供的圖表類型和自訂選項較少。
+- **互動性有限**：對於非常複雜或高度互動式的圖表可能不適用。
+
+# 2. BigQuery 整合
+
+BigQuery 是 Google Cloud Platform (GCP) 提供的一個完全託管、無伺服器、高度可擴展且經濟高效的資料倉儲。它專為分析大規模資料集而設計，並提供強大的 SQL 查詢引擎。
+
+## 在 GAS 中與 BigQuery 互動的步驟：
+
+1. **啟用 BigQuery API**：在您的 Google Cloud 專案中啟用 BigQuery API。您的 GAS 專案需要與一個 GCP 專案關聯。
+2. **設定權限**：確保您的 GAS 腳本具有訪問 BigQuery 資料集的權限。這通常涉及到服務帳戶的設定和授權。
+3. **使用 BigQuery 服務**：GAS 提供了 BigQuery 服務，允許您在腳本中與 BigQuery 進行互動。
+
+## 主要功能：
+
+- **執行 SQL 查詢** (`BigQuery.Jobs.query()`): 您可以使用標準 SQL 語法在 BigQuery 中查詢您的資料。GAS 腳本可以將 SQL 查詢字串發送到 BigQuery 並接收查詢結果。
+- **獲取查詢結果** (`BigQuery.Jobs.getQueryResults()`): 在執行查詢後，您可以使用此方法檢索查詢結果。結果通常以 JavaScript 物件或陣列的形式返回。
+- **管理資料集和表格** (透過 `BigQuery.Datasets` 和 `BigQuery.Tables` 服務): 您可以使用 GAS 腳本來列出、創建、更新和刪除 BigQuery 中的資料集和表格 (需要相應的權限)。
+- **載入資料** (`BigQuery.Jobs.insert()` 搭配 `configuration.load`): 可以將 Google Sheets 或其他來源的資料載入到 BigQuery 表格中。
+  // 執行 BigQuery 查詢的範例
+  var request = {
+  query: sqlQuery,
+  useLegacySql: false // 使用標準 SQL
+  };
+
+  try {
+  var queryResults = BigQuery.Jobs.query(projectId, request);
+  var jobId = queryResults.jobReference.jobId;
+
+  // 等待查詢完成
+  var sleepTimeMs = 500;
+  while (!BigQuery.Jobs.getQueryResults(projectId, jobId).jobComplete) {
+  Utilities.sleep(sleepTimeMs);
+  sleepTimeMs \*= 2;
+  }
+
+  // 獲取查詢結果
+  var results = BigQuery.Jobs.getQueryResults(projectId, jobId);
+  if (results.rows) {
+  Logger.log('查詢結果:');
+  for (var i = 0; i < results.rows.length; i++) {
+  Logger.log(results.rows[i].f.map(function(field) { return field.v; }).join(', '));
+  }
+  } else {
+  Logger.log('沒有找到符合條件的資料。');
+  }
+  } catch (e) {
+  Logger.log('執行 BigQuery 查詢時發生錯誤: ' + e);
+  }
+
+## 將 Google Sheets 資料匯入到 BigQuery
+
+您可以使用 `BigQuery.Jobs.insert()` 方法和 `configuration.load` 屬性來將 Google Sheets 的資料匯入到 BigQuery。您需要指定 Google Sheets 的電子表格 ID、工作表名稱和 BigQuery 的目標資料集和表格。
+
+## BigQuery 整合的優點
+
+- **處理大規模資料**：BigQuery 專為處理 TB 甚至 PB 級別的資料而設計，性能遠超 Google Sheets 的限制。
+- **強大的 SQL 分析能力**：可以使用複雜的 SQL 查詢進行資料分析、聚合、篩選和轉換。
+- **無伺服器架構**：您無需管理底層基礎設施，只需專注於撰寫 SQL 查詢。
+- **與其他 GCP 服務整合**：可以與 Cloud Functions、AI Platform 等其他 GCP 服務結合使用，進行更高級的資料處理和分析。
+
+## BigQuery 整合的限制
+
+- **需要 GCP 帳戶和設定**：您需要擁有一個 Google Cloud 專案並啟用 BigQuery API。
+- **學習曲線**：熟悉 BigQuery 和 SQL 需要一定的時間和精力。
+- **成本**：雖然 BigQuery 提供免費層級，但對於大量資料的儲存和查詢可能會產生費用。
+- **權限管理**：需要仔細管理 GAS 腳本訪問 BigQuery 的權限。
+
+總之，Charts 服務為 GAS 提供了基本但實用的資料可視化能力，而與 BigQuery 的整合則使得 GAS 能夠處理和分析大規模資料集，並利用 BigQuery 強大的 SQL 查詢引擎。這兩個功能結合使用，可以幫助您在 Google 生態系統中進行更深入的資料探索和分析。

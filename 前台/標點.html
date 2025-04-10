@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>標註紅點</title>
+    <style>
+          body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+        /* 設置平面圖容器 */
+        .image-container {
+      background-image: url('https://i.imgur.com/Pj5JrSI.jpeg');
+      background-size: cover;
+      background-position: center;
+      position: relative; 
+      background-color: #fff;
+      border: 1px solid #ccc;
+      width: 1108px;
+      height: 945px;
+      margin: 20px auto;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer; /* 設置為指針樣式 */
+        }
+
+        /* 紅點樣式 */
+        .red-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* 顯示標註的名稱 *//*0-50%*/
+        .hotspot-name {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 12px;
+            color: #333;
+        }
+
+        /* 顯示所有標註的區域 */
+        .hotspot-list {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            max-width: 100%;
+            overflow: auto;
+        }
+
+        .hotspot {
+            margin-bottom: 10px;
+        }
+            
+        /* 彈出窗口的樣式 */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .popup button {
+            margin-top: 10px;
+        }
+
+        /* 遮罩層 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 500;
+        }
+
+        /* 陣列顯示區域 */
+        .array-display {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e8f4ff;
+            border: 1px solid #bbd8ff;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* 標題樣式 */
+        h2 {
+            color: #333;
+            margin-top: 20px;
+        }
+        
+        /* 程式碼複製按鈕 */
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .copy-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<h2>標註紅點系統</h2>
+<p>點擊圖片任意位置來標註紅點</p>
+
+<div class="image-container" id="image-container">
+    <!-- 使用者標註紅點的地方 -->
+</div>
+
+<!-- 彈出窗口 -->
+<div id="popup" class="popup">
+    <p>紅點位置: <span id="popup-location"></span></p>
+    <input type="text" id="hotspot-name" placeholder="命名紅點">
+    <button onclick="saveHotspot()">儲存紅點</button>
+    <button onclick="closePopup()">關閉</button>
+</div>
+
+<!-- 遮罩層 -->
+<div id="overlay" class="overlay"></div>
+
+<!-- 顯示紅點陣列資料 -->
+<h2>紅點資料陣列（HTML格式）</h2>
+<div id="array-display" class="array-display"></div>
+<div style="display: flex; gap: 10px;">
+    <button class="copy-btn" onclick="copyArrayToClipboard()">複製HTML代碼</button>
+    <button class="clear-btn" onclick="clearAllHotspots()" style="background-color: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-top: 10px;">清除所有標註</button>
+</div>
+
+<!-- 顯示紅點列表 -->
+<h2>紅點列表</h2>
+<div id="hotspot-list" class="hotspot-list"></div>
+
+<script>
+    let hotspots = []; // 用來儲存所有的紅點資料
+    let currentHotspot = null; // 當前選中的紅點
+
+    // 當頁面載入時載入儲存的紅點資料
+    window.addEventListener('load', function() {
+        // 嘗試從 localStorage 讀取紅點資料
+        const savedHotspots = localStorage.getItem('savedHotspots');
+        if (savedHotspots) {
+            hotspots = JSON.parse(savedHotspots);
+            // 根據儲存的資料顯示紅點
+            hotspots.forEach(function(hotspot) {
+                createRedDot(hotspot.top, hotspot.left, hotspot.name);
+            });
+            displayHotspots();
+            updateArrayDisplay();
+        }
+    });
+
+    // 創建紅點元素
+    function createRedDot(top, left, name) {
+        const dot = document.createElement("div");
+        dot.classList.add("red-dot");
+        dot.style.top = `${top}px`; // 不需要-5px的偏移
+        dot.style.left = `${left}px`; // 不需要-5px的偏移
+        dot.dataset.location = name; // 記錄位置和名稱
+        
+        // 添加名稱標籤
+        const nameDiv = document.createElement("div");
+        nameDiv.classList.add("hotspot-name");
+        nameDiv.innerText = name;
+        dot.appendChild(nameDiv);
+        
+        // 添加紅點到圖片上
+        document.getElementById("image-container").appendChild(dot);
+    }
+
+    // 當使用者點擊圖片時
+    document.getElementById("image-container").addEventListener("click", function(event) {
+        // 避免點擊已有的紅點時再創建新的紅點
+        if (event.target.classList.contains('red-dot') || 
+            event.target.classList.contains('hotspot-name')) {
+            return;
+        }
+
+        // 計算點擊位置
+        const rect = this.getBoundingClientRect();
+        const top = event.clientY - rect.top;
+        const left = event.clientX - rect.left;
+
+        // 顯示紅點
+        const dot = document.createElement("div");
+        dot.classList.add("red-dot");
+        dot.style.top = `${top}px`; // 不需要-5px的偏移
+        dot.style.left = `${left}px`; // 不需要-5px的偏移
+
+        // 添加紅點到圖片上
+        this.appendChild(dot);
+
+        // 顯示彈出視窗，讓使用者命名紅點
+        document.getElementById("popup-location").innerText = `Top: ${top}px, Left: ${left}px`;
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+
+        // 記錄當前紅點
+        currentHotspot = { top, left, dot };
+    });
+
+    // 儲存紅點
+    function saveHotspot() {
+        const name = document.getElementById("hotspot-name").value;
+        if (!name) {
+            alert("請輸入紅點名稱");
+            return;
+        }
+
+        // 更新點的data-location屬性
+        currentHotspot.dot.dataset.location = name;
+
+        // 儲存紅點資料
+        hotspots.push({
+            top: currentHotspot.top,
+            left: currentHotspot.left,
+            name: name
+        });
+
+        // 儲存到 localStorage
+        localStorage.setItem('savedHotspots', JSON.stringify(hotspots));
+
+        // 更新紅點資料顯示
+        const nameDiv = document.createElement("div");
+        nameDiv.classList.add("hotspot-name");
+        nameDiv.innerText = name;
+        currentHotspot.dot.appendChild(nameDiv);
+
+        // 清空命名欄位
+        document.getElementById("hotspot-name").value = "";
+
+        // 關閉彈出視窗
+        closePopup();
+
+        // 更新下方顯示所有資料
+        displayHotspots();
+        
+        // 更新陣列顯示
+        updateArrayDisplay();
+    }
+
+    // 關閉彈出視窗
+    function closePopup() {
+        document.getElementById("popup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+
+    // 更新陣列顯示區域為HTML格式
+    function updateArrayDisplay() {
+        const arrayDisplay = document.getElementById("array-display");
+        
+        // 清空現有內容
+        arrayDisplay.innerHTML = "";
+        
+        // 為每個熱點創建HTML格式的字符串
+        if (hotspots.length > 0) {
+            let htmlString = "";
+            
+            hotspots.forEach(hotspot => {
+                htmlString += `<div class="hotspot" style="top: ${hotspot.top}px; left: ${hotspot.left}px;" data-location="${hotspot.name}"> <div class="hotspot-name">${hotspot.name}</div> </div>\n`;
+            });
+            
+            arrayDisplay.textContent = htmlString;
+        } else {
+            arrayDisplay.textContent = "尚無標註點";
+        }
+    }
+
+    // 複製HTML代碼到剪貼板
+    function copyArrayToClipboard() {
+        const arrayDisplay = document.getElementById("array-display");
+        const textToCopy = arrayDisplay.textContent;
+        
+        navigator.clipboard.writeText(textToCopy).then(function() {
+            alert("HTML代碼已成功複製到剪貼板");
+        }, function() {
+            alert("複製失敗，請手動選取並複製");
+        });
+    }
+
+    // 顯示紅點資料
+    function displayHotspots() {
+        const listContainer = document.getElementById("hotspot-list");
+        listContainer.innerHTML = ""; // 清空現有資料
+
+        hotspots.forEach((hotspot, index) => {
+            const div = document.createElement("div");
+            div.classList.add("hotspot");
+            
+            // 創建顯示內容
+            div.innerHTML = `
+                <strong>${index + 1}. ${hotspot.name}</strong>
+                <p>位置: Top=${hotspot.top}px, Left=${hotspot.left}px</p>
+                <button onclick="deleteHotspot(${index})">刪除</button>
+            `;
+            
+            listContainer.appendChild(div);
+        });
+    }
+
+    // 刪除紅點功能
+    function deleteHotspot(index) {
+        if (confirm("確定要刪除這個標註點嗎？")) {
+            // 從 DOM 中移除紅點
+            const dots = document.querySelectorAll('.red-dot');
+            dots[index].remove();
+            
+            // 從陣列中移除
+            hotspots.splice(index, 1);
+            
+            // 更新到 localStorage
+            localStorage.setItem('savedHotspots', JSON.stringify(hotspots));
+            
+            // 更新顯示
+            displayHotspots();
+            updateArrayDisplay();
+        }
+    }
+
+    // 清除所有標註記錄
+    function clearAllHotspots() {
+        if (confirm("確定要清除所有標註記錄嗎？此操作無法恢復！")) {
+            // 清空陣列
+            hotspots = [];
+            
+            // 清除localStorage
+            localStorage.removeItem('savedHotspots');
+            
+            // 移除所有紅點
+            const dots = document.querySelectorAll('.red-dot');
+            dots.forEach(dot => dot.remove());
+            
+            // 更新顯示
+            displayHotspots();
+            updateArrayDisplay();
+            
+            alert("所有標註記錄已清除");
+        }
+    }
+</script>
+
+</body>
+</html>
